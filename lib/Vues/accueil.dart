@@ -1,6 +1,7 @@
 import 'package:board_datetime_picker/board_datetime_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:switcher_button/switcher_button.dart';
 
 class Accueil extends StatefulWidget {
   const Accueil({super.key});
@@ -15,6 +16,7 @@ class _AccueilState extends State<Accueil> {
   var _NbrePersonnes = '';
   bool? _Rep;
   bool exec = false;
+  bool estChauffeur = false;
 
   final Depart = TextEditingController();
   final Destination = TextEditingController();
@@ -45,7 +47,6 @@ class _AccueilState extends State<Accueil> {
     return tmp;
   }
 
-  
   @override
   void initState() {
     super.initState();
@@ -54,15 +55,12 @@ class _AccueilState extends State<Accueil> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("AliKaVoA"),
-      ),
       body: new Stack(
         children: <Widget>[
           new Container(
             decoration: new BoxDecoration(
               image: new DecorationImage(
-                image: new AssetImage("assets/images/fond.jpg"),
+                image: new AssetImage("images/fond.jpg"),
                 fit: BoxFit.cover,
               ),
             ),
@@ -79,8 +77,8 @@ class _AccueilState extends State<Accueil> {
                     onChanged: _onChangeText,
                     controller: Depart,
                     decoration: InputDecoration(
-                      labelText: 'Entrez Votre Depart ',
-                      hintText: 'Entrez Votre Depart',
+                      labelText: 'Votre point de Départ ',
+                      hintText: 'Votre point de Départ',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -103,31 +101,20 @@ class _AccueilState extends State<Accueil> {
                     onChanged: _onChangeText,
                     controller: Destination,
                     decoration: InputDecoration(
-                      labelText: 'Entrez votre prénom',
-                      hintText: 'Entrez votre prénom',
+                      labelText: 'Votre destination',
+                      hintText: 'Votre destination',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                     validator: (value) {
                       if (Destination.text.isEmpty) {
-                        return 'S\'il vous plaît entrez votre prénom';
+                        return 'S\'il vous plaît entrez votre destination';
                       }
                       return null;
                     },
                   ),
                 ),
-              ),
-              Expanded(
-                  flex: 9,
-                  child: SectionWidget(
-                    title: 'Date du déplacement',
-                    items: [
-                      PickerItemWidget(
-                        pickerType: DateTimePickerType.datetime,
-                      ),
-                    ],
-                  ),
               ),
               Expanded(
                 flex: 7,
@@ -138,8 +125,8 @@ class _AccueilState extends State<Accueil> {
                     onChanged: _onChangeText,
                     controller: NbrePersonnes,
                     decoration: InputDecoration(
-                      labelText: "Entrez Un nom d'utilisateur précédé de @",
-                      hintText: "Entrez Un nom d'utilisateur précédé de @",
+                      labelText: "Nombre de voyageurs",
+                      hintText: "Nombre de voyageurs",
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -154,9 +141,29 @@ class _AccueilState extends State<Accueil> {
                   ),
                 ),
               ),
-
               Expanded(
                 flex: 7,
+                child: Container(
+                  color: Colors.white.withOpacity(0.7),
+                  height: 40,
+                  child: PickerItemWidget(
+                    pickerType: DateTimePickerType.datetime,
+                  ),
+                ),
+              ),
+              Column(
+                children: [
+                  SwitcherButton(
+                    value: false,
+                    onChange: (value) {
+                      estChauffeur = value;
+                    },
+                  ),
+                  Text("Vous êtes le conducteur"),
+                ],
+              ),
+              Expanded(
+                flex: 3,
                 child: TextButton(
                   style: TextButton.styleFrom(
                     fixedSize: const Size(200, 100),
@@ -177,7 +184,7 @@ class _AccueilState extends State<Accueil> {
                             child: Text(
                               "Fermer",
                               style:
-                              TextStyle(color: Colors.white, fontSize: 20),
+                                  TextStyle(color: Colors.white, fontSize: 20),
                             ),
                             onPressed: () => Navigator.pop(context),
                             width: 120,
@@ -196,7 +203,7 @@ class _AccueilState extends State<Accueil> {
                             child: Text(
                               "Fermer",
                               style:
-                              TextStyle(color: Colors.white, fontSize: 20),
+                                  TextStyle(color: Colors.white, fontSize: 20),
                             ),
                             onPressed: () => Navigator.pop(context),
                             width: 120,
@@ -220,7 +227,6 @@ class _AccueilState extends State<Accueil> {
     );
   }
 }
-
 
 class SectionWidget extends StatelessWidget {
   final String title;
@@ -286,8 +292,8 @@ class PickerItemWidget extends StatelessWidget {
               withSecond: DateTimePickerType.time == pickerType,
               customOptions: DateTimePickerType.time == pickerType
                   ? BoardPickerCustomOptions(
-                seconds: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55],
-              )
+                      seconds: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55],
+                    )
                   : null,
             ),
             // Specify if you want changes in the picker to take effect immediately.
@@ -363,8 +369,8 @@ class PickerItemWidget extends StatelessWidget {
                       withSecond: DateTimePickerType.time == pickerType,
                     )).format(data),
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                          fontWeight: FontWeight.bold,
+                        ),
                   );
                 },
               ),
@@ -382,7 +388,7 @@ extension DateTimePickerTypeExtension on DateTimePickerType {
       case DateTimePickerType.date:
         return 'Date';
       case DateTimePickerType.datetime:
-        return 'DateTime';
+        return 'Date et heure';
       case DateTimePickerType.time:
         return 'Time';
     }
