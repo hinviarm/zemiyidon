@@ -1,4 +1,5 @@
 import 'package:board_datetime_picker/board_datetime_picker.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:switcher_button/switcher_button.dart';
@@ -192,10 +193,13 @@ class _AccueilState extends State<Accueil> {
               ),
               Column(
                 children: [
-                  SwitcherButton(
+                  CupertinoSwitch(
                     value: estChauffeur,
-                    onChange: (value) {
-                      estChauffeur = value;
+                    trackColor: Colors.blue,
+                    onChanged: (value) {
+                      setState(() {
+                        estChauffeur = value;
+                      });
                     },
                   ),
                   Text("Vous êtes le conducteur "+ estChauffeur.toString()),
