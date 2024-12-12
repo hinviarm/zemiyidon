@@ -113,6 +113,45 @@ class _AccueilState extends State<Accueil> {
                       }
                       return null;
                     },
+                    onTap: () {
+                      Alert(
+                        context: context,
+                        type: AlertType.info,
+                        title: "Serez vous le conducteur",
+                        desc: "Serez vous le conducteur sur ce trajet ?",
+                        buttons: [
+                          DialogButton(
+                            child: Text(
+                              "Oui",
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 20),
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                estChauffeur = true;
+                              });
+                              debugPrint("!!!!!!!!!!!!!!"+estChauffeur.toString());
+                              Navigator.pop(context);
+                            },
+                            width: 120,
+                          ),
+                          DialogButton(
+                            child: Text(
+                              "Non",
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 20),
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                estChauffeur = false;
+                              });
+                              Navigator.pop(context);
+                            },
+                            width: 120,
+                          ),
+                        ],
+                      ).show();
+                    },
                   ),
                 ),
               ),
@@ -154,12 +193,12 @@ class _AccueilState extends State<Accueil> {
               Column(
                 children: [
                   SwitcherButton(
-                    value: false,
+                    value: estChauffeur,
                     onChange: (value) {
                       estChauffeur = value;
                     },
                   ),
-                  Text("Vous êtes le conducteur"),
+                  Text("Vous êtes le conducteur "+ estChauffeur.toString()),
                 ],
               ),
               Expanded(
