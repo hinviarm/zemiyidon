@@ -126,6 +126,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_email_sender:
+    dependency: "direct main"
+    description:
+      name: flutter_email_sender
+      sha256: fb515d4e073d238d0daf1d765e5318487b6396d46b96e0ae9745dbc9a133f97a
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.0.3"
   flutter_lints:
     dependency: "direct dev"
     description:
@@ -142,6 +150,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.0.0"
+  flutter_session_manager:
+    dependency: "direct main"
+    description:
+      name: flutter_session_manager
+      sha256: "5483f1c245ee7a3bc294d93b4d73d6a068d5c0df292ccd4b48bf8b4460f0cd19"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.3"
   flutter_test:
     dependency: "direct dev"
     description: flutter
