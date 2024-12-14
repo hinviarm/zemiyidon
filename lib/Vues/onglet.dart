@@ -29,7 +29,7 @@ class _MonOnglet extends State<Onglet> {
         controller: _controller,
         children: <Widget>[
           Accueil(),
-          Profil(),
+          Accueil(),
         ],
       ),
       bottomNavigationBar: new Theme(

@@ -91,13 +91,14 @@ class _MonProfil extends State<Profil> {
       setState(() {
         connect = true;
         var wordShow = convert.jsonDecode(reponse.body);
+        debugPrint("jjjjjj "+wordShow.toString());
         for (var elem in wordShow) {
           elem = elem.toString().replaceAll("[", "").replaceAll("]", "").split(", ");
-          id = elem[4];
-          nOmS = elem[1];
-          prenOmS = elem[2];
-          teLephoneS = elem[3];
-          mDP = elem[5];
+          id = elem[3];
+          nOmS = elem[0];
+          prenOmS = elem[1];
+          teLephoneS = elem[2];
+          mDP = elem[4];
             debugPrint('$elem');
         }
         final h = Crypt(mDP!);
@@ -162,7 +163,7 @@ class _MonProfil extends State<Profil> {
     Nom = data.additionalSignupData!["Nom"]!;
     Prenom = data.additionalSignupData!["Prenom"]!;
     Telephone = data.additionalSignupData!["Telephone"]!;
-    insertion(data.name!, data.password!, Nom, Prenom, Telephone);
+    insertion(data.name!, c1.toString(), Nom, Prenom, Telephone);
     return Future.delayed(loginTime).then((_) {
       if (!mounted) return null;
       return null;
@@ -203,7 +204,20 @@ class _MonProfil extends State<Profil> {
 
   @override
   Widget build(BuildContext context) {
-    return FlutterLogin(
+    return MaterialApp(
+      theme: ThemeData(
+        scaffoldBackgroundColor: Colors.transparent,
+      ),
+      home: Scaffold(
+          extendBodyBehindAppBar: true,
+          body: Container(
+          decoration: const BoxDecoration(
+          image: DecorationImage(
+          image: AssetImage("images/fond.jpg"),
+      fit: BoxFit.cover,
+    ),
+    ),
+    child:FlutterLogin(
             logo: 'images/homeli.png',
             onLogin: _authUser,
             onSignup: _signupUser,
@@ -233,14 +247,16 @@ class _MonProfil extends State<Profil> {
               pageColorDark: Colors.transparent,
             ),
             onSubmitAnimationCompleted: () {
-    if (!mounted && !connect) {
-      Navigator.of(context).pushReplacement(MaterialPageRoute(
-        builder: (context) => Onglet(),
-      ));
+    if (sess) {
+      Navigator.of(context).popUntil((route) => route.isFirst);
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => Onglet()));
     }
             },
             onRecoverPassword: _recoverPassword,
-          );
+          ),
+    ),
+    ),
+    );
   }
 }
 
