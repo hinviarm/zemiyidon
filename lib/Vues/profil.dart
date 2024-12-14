@@ -8,6 +8,7 @@ import 'package:rflutter_alert/rflutter_alert.dart';
 import 'dart:convert' as convert;
 
 import '../Models/utile.dart';
+import 'onglet.dart';
 
 class Profil extends StatefulWidget {
   Profil({super.key});
@@ -19,14 +20,14 @@ class Profil extends StatefulWidget {
 class _MonProfil extends State<Profil> {
   Duration get loginTime => Duration(milliseconds: 2250);
   bool connect = false;
-  String id = '';
-  String mDP = '';
+  String? id = '';
+  String? mDP = '';
   String Nom = "";
   String Prenom = "";
   String Telephone = "";
-  String nOmS = "";
-  String prenOmS = "";
-  String teLephoneS = "";
+  String? nOmS = "";
+  String? prenOmS = "";
+  String? teLephoneS = "";
   bool sess = false;
   bool mailOK = false;
 
@@ -34,7 +35,7 @@ class _MonProfil extends State<Profil> {
   void initState() {
     recSession();
     if (id != '' && mDP != '') {
-      sessionConnect(id, mDP);
+      sessionConnect(id!, mDP!);
     }
     super.initState();
   }
@@ -53,7 +54,7 @@ class _MonProfil extends State<Profil> {
   }
 
   void insertion(String mail, String password, String nom, String prenom, String telephone ) async {
-    var urlStringPost = 'https://example.com/api/signup';
+    var urlStringPost = 'http://149.202.45.36:8008/insertion';
     var urlPost = Uri.parse(urlStringPost);
     try {
       var response = await http.post(
@@ -83,7 +84,7 @@ class _MonProfil extends State<Profil> {
   void sessionConnect(String mail, String password) async {
     debugPrint('id ${mail}');
     debugPrint('MDP ${password}');
-    var urlString = 'http://149.202.45.36:8001/identification?Email=${mail}';
+    var urlString = 'http://149.202.45.36:8008/identification?Email=${mail}';
     var url = Uri.parse(urlString);
     var reponse = await http.get(url);
     if (reponse.statusCode == 200) {
@@ -99,7 +100,7 @@ class _MonProfil extends State<Profil> {
           mDP = elem[5];
             debugPrint('$elem');
         }
-        final h = Crypt(mDP);
+        final h = Crypt(mDP!);
         if (h.match(password)) {
           sess = true;
         }
@@ -124,7 +125,7 @@ class _MonProfil extends State<Profil> {
     await sessionManager.set("email", mail);
     await sessionManager.set("password", password);
     //await sessionManager.set("user", User(nom: mail, password: password));
-    var urlString = 'http://149.202.45.36:8001/identification?Email=${mail}';
+    var urlString = 'http://149.202.45.36:8008/identification?Email=${mail}';
     var url = Uri.parse(urlString);
     var reponse = await http.get(url);
     if (reponse.statusCode == 200) {
@@ -206,8 +207,6 @@ class _MonProfil extends State<Profil> {
             logo: 'images/homeli.png',
             onLogin: _authUser,
             onSignup: _signupUser,
-      navigateBackAfterRecovery: true,
-      loginAfterSignUp: false,
       additionalSignupFields: [
         const UserFormField(keyName: 'Nom'),
         const UserFormField(keyName: 'Prenom', displayName: 'Prénom'),
@@ -235,8 +234,9 @@ class _MonProfil extends State<Profil> {
             ),
             onSubmitAnimationCompleted: () {
     if (!mounted && !connect) {
-      //todo à faire si connecté
-      postTacheEnLigne();
+      Navigator.of(context).pushReplacement(MaterialPageRoute(
+        builder: (context) => Onglet(),
+      ));
     }
             },
             onRecoverPassword: _recoverPassword,
