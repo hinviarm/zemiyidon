@@ -5,12 +5,15 @@ import 'package:flutter_login/flutter_login.dart';
 import 'package:flutter_session_manager/flutter_session_manager.dart';
 import 'package:http/http.dart' as http;
 import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:zemiyidon/Vues/transition.dart';
 import 'dart:convert' as convert;
 
 import '../Models/utile.dart';
 import 'onglet.dart';
 
 class Profil extends StatefulWidget {
+  static const routeName = '/profil';
+
   Profil({super.key});
 
   @override
@@ -91,7 +94,6 @@ class _MonProfil extends State<Profil> {
       setState(() {
         connect = true;
         var wordShow = convert.jsonDecode(reponse.body);
-        debugPrint("jjjjjj "+wordShow.toString());
         for (var elem in wordShow) {
           elem = elem.toString().replaceAll("[", "").replaceAll("]", "").split(", ");
           id = elem[3];
@@ -101,6 +103,7 @@ class _MonProfil extends State<Profil> {
           mDP = elem[4];
             debugPrint('$elem');
         }
+        debugPrint("jjjjjj "+mDP.toString()+"   §§§  "+password);
         final h = Crypt(mDP!);
         if (h.match(password)) {
           sess = true;
@@ -248,8 +251,11 @@ class _MonProfil extends State<Profil> {
             ),
             onSubmitAnimationCompleted: () {
     if (sess) {
-      Navigator.of(context).popUntil((route) => route.isFirst);
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => Onglet()));
+      Navigator.of(context).pushReplacement(
+        FadePageRoute(
+          builder: (context) => const Onglet(),
+        ),
+      );
     }
             },
             onRecoverPassword: _recoverPassword,
