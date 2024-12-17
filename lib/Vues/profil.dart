@@ -22,6 +22,7 @@ class Profil extends StatefulWidget {
 
 class _MonProfil extends State<Profil> {
   Duration get loginTime => Duration(milliseconds: 2250);
+  var sessionManager = SessionManager();
   bool connect = false;
   String? id = '';
   String? mDP = '';
@@ -37,9 +38,6 @@ class _MonProfil extends State<Profil> {
   @override
   void initState() {
     recSession();
-    if (id != '' && mDP != '') {
-      sessionConnect(id!, mDP!);
-    }
     super.initState();
   }
 
@@ -49,6 +47,9 @@ class _MonProfil extends State<Profil> {
     nOmS = await SessionManager().get("nom");
     prenOmS = await SessionManager().get("prenom");
     teLephoneS = await SessionManager().get("telephone");
+    if (id != '' && mDP != '') {
+      await sessionConnect(id!, mDP!);
+    }
   }
 
   @override
@@ -56,7 +57,7 @@ class _MonProfil extends State<Profil> {
     super.dispose();
   }
 
-  void insertion(String mail, String password, String nom, String prenom, String telephone ) async {
+  Future<void> insertion(String mail, String password, String nom, String prenom, String telephone ) async {
     var urlStringPost = 'http://149.202.45.36:8008/insertion';
     var urlPost = Uri.parse(urlStringPost);
     try {
@@ -75,6 +76,11 @@ class _MonProfil extends State<Profil> {
       );
       if (!mounted) {
         debugPrint('Insertion réussie : ${response.statusCode}');
+        await sessionManager.set("email", mail);
+        await sessionManager.set("password", password);
+        await sessionManager.set("nom", nom);
+        await sessionManager.set("prenom", prenom);
+        await sessionManager.set("telephone", telephone);
       }
     } catch (e) {
       if (!mounted) {
@@ -84,7 +90,7 @@ class _MonProfil extends State<Profil> {
   }
 
 
-  void sessionConnect(String mail, String password) async {
+  Future<void> sessionConnect(String mail, String password) async {
     debugPrint('id ${mail}');
     debugPrint('MDP ${password}');
     var urlString = 'http://149.202.45.36:8008/identification?Email=${mail}';
@@ -107,48 +113,27 @@ class _MonProfil extends State<Profil> {
         final h = Crypt(mDP!);
         if (h.match(password)) {
           sess = true;
+
         }
       });
-      if (sess) {
-        var sessionManager = SessionManager();
-        await sessionManager.set("email", id);
-        await sessionManager.set("password", mDP);
-        await sessionManager.set("nom", nOmS);
-        await sessionManager.set("prenom", prenOmS);
-        await sessionManager.set("telephone", teLephoneS);
-        //await sessionManager.set("user", User(mail: mail, password: password));
-      }
+if(sess = true){
+  await sessionManager.set("email", id);
+  await sessionManager.set("password", mDP);
+  await sessionManager.set("nom", nOmS);
+  await sessionManager.set("prenom", prenOmS);
+  await sessionManager.set("telephone", teLephoneS);
+}
     }
     debugPrint('connect = $connect');
     debugPrint('sess = $sess');
   }
 
-  void session(String mail, String password) async {
-    await SessionManager().destroy();
-    var sessionManager = SessionManager();
-    await sessionManager.set("email", mail);
-    await sessionManager.set("password", password);
-    //await sessionManager.set("user", User(nom: mail, password: password));
-    var urlString = 'http://149.202.45.36:8008/identification?Email=${mail}';
-    var url = Uri.parse(urlString);
-    var reponse = await http.get(url);
-    if (reponse.statusCode == 200) {
-      setState(() {
-        connect = true;
-        var wordShow = convert.jsonDecode(reponse.body);
-        final h = Crypt(wordShow);
-        if (h.match(password)) {
-          sess = true;
-        }
-      });
-    }
-  }
 
   Future<String?> _authUser(LoginData data) {
     final c1 = Crypt.sha256(data.password);
     debugPrint('Name: ${data.name}, Password: ${c1.toString()}');
-    return Future.delayed(loginTime).then((_) {
-      sessionConnect(data.name, data.password);
+    return Future.delayed(loginTime).then((_) async {
+      await sessionConnect(data.name, data.password);
       if (!connect) {
         return 'Identifiants ou Mot de passe incorrect';
       } 
@@ -157,7 +142,7 @@ class _MonProfil extends State<Profil> {
   }
 
 
-  Future<String?> _signupUser(SignupData data) {
+  Future<String?> _signupUser(SignupData data) async{
     debugPrint('Signup Name: ${data.name}, Password: ${data.password}');
     final c1 = Crypt.sha256(data.password!);
     data.additionalSignupData?.forEach((key, value) {
@@ -166,7 +151,7 @@ class _MonProfil extends State<Profil> {
     Nom = data.additionalSignupData!["Nom"]!;
     Prenom = data.additionalSignupData!["Prenom"]!;
     Telephone = data.additionalSignupData!["Telephone"]!;
-    insertion(data.name!, c1.toString(), Nom, Prenom, Telephone);
+    await insertion(data.name!, c1.toString(), Nom, Prenom, Telephone);
     return Future.delayed(loginTime).then((_) {
       if (!mounted) return null;
       return null;

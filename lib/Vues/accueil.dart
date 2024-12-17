@@ -204,7 +204,7 @@ class _AccueilState extends State<Accueil> {
                 ],
               ),
               Expanded(
-                flex: 3,
+                flex: 4,
                 child: TextButton(
                   style: TextButton.styleFrom(
                     fixedSize: const Size(200, 100),

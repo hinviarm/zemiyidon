@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_session_manager/flutter_session_manager.dart';
+import 'package:zemiyidon/Vues/person.dart';
 import 'accueil.dart';
 import 'profil.dart';
 
@@ -10,6 +12,19 @@ class Onglet extends StatefulWidget {
 class _MonOnglet extends State<Onglet> {
   final PageController _controller = PageController(initialPage: 0);
   int _currentIndex = 0;
+  String prenom = "";
+
+  @override
+  void initState(){
+    recupPrenom();
+    super.initState();
+  }
+
+  void recupPrenom() async{
+    prenom = await SessionManager().get("prenom");
+    setState(() {
+    });
+  }
 
   @override
   void dispose() {
@@ -29,7 +44,7 @@ class _MonOnglet extends State<Onglet> {
         controller: _controller,
         children: <Widget>[
           Accueil(),
-          Accueil(),
+          Person(),
         ],
       ),
       bottomNavigationBar: new Theme(
@@ -49,14 +64,14 @@ class _MonOnglet extends State<Onglet> {
             });
             _controller.jumpToPage(_currentIndex);
           },
-          items: const <BottomNavigationBarItem>[
-            BottomNavigationBarItem(
+          items: <BottomNavigationBarItem>[
+            const BottomNavigationBarItem(
               icon: Icon(Icons.home),
               label: 'Accueil',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.boy_rounded),
-              label: 'Profil',
+              icon: const Icon(Icons.boy_rounded),
+              label: prenom,
             ),
           ],
         ),
