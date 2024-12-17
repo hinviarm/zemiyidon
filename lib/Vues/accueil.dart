@@ -66,13 +66,14 @@ class _AccueilState extends State<Accueil> {
               ),
             ),
           ),
-          new Flex(
+          new Container(
+            color: Colors.white.withOpacity(0.7),
+          child: new Flex(
             direction: Axis.vertical,
             children: <Widget>[
               Expanded(
                 flex: 7,
                 child: Container(
-                  color: Colors.white.withOpacity(0.7),
                   height: 40,
                   child: TextFormField(
                     onChanged: _onChangeText,
@@ -96,7 +97,6 @@ class _AccueilState extends State<Accueil> {
               Expanded(
                 flex: 7,
                 child: Container(
-                  color: Colors.white.withOpacity(0.7),
                   height: 40,
                   child: TextFormField(
                     onChanged: _onChangeText,
@@ -159,7 +159,6 @@ class _AccueilState extends State<Accueil> {
               Expanded(
                 flex: 7,
                 child: Container(
-                  color: Colors.white.withOpacity(0.7),
                   height: 40,
                   child: TextFormField(
                     onChanged: _onChangeText,
@@ -184,7 +183,6 @@ class _AccueilState extends State<Accueil> {
               Expanded(
                 flex: 7,
                 child: Container(
-                  color: Colors.white.withOpacity(0.7),
                   height: 40,
                   child: PickerItemWidget(
                     pickerType: DateTimePickerType.datetime,
@@ -264,6 +262,7 @@ class _AccueilState extends State<Accueil> {
                 ),
               ),
             ],
+          ),
           ),
         ],
       ),
