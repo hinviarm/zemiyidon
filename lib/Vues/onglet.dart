@@ -1,28 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_session_manager/flutter_session_manager.dart';
-import 'package:zemiyidon/Vues/person.dart';
 import 'accueil.dart';
-import 'profil.dart';
+import 'person.dart';
 
 class Onglet extends StatefulWidget {
   const Onglet({Key? key}) : super(key: key);
+
   @override
   _MonOnglet createState() => _MonOnglet();
 }
+
 class _MonOnglet extends State<Onglet> {
   final PageController _controller = PageController(initialPage: 0);
   int _currentIndex = 0;
-  String prenom = "";
+  String prenom = "Utilisateur"; // Valeur par défaut
 
   @override
-  void initState(){
-    recupPrenom();
+  void initState() {
     super.initState();
+    recupPrenom();
   }
 
-  void recupPrenom() async{
-    prenom = await SessionManager().get("prenom");
+  void recupPrenom() async {
+    String? fetchedPrenom = await SessionManager().get("prenom");
     setState(() {
+      prenom = fetchedPrenom ?? "Utilisateur"; // Valeur par défaut si null
     });
   }
 
@@ -47,22 +49,21 @@ class _MonOnglet extends State<Onglet> {
           Person(),
         ],
       ),
-      bottomNavigationBar: new Theme(
+      bottomNavigationBar: Theme(
         data: Theme.of(context).copyWith(
-          // sets the background color of the `BottomNavigationBar`
-            canvasColor: Colors.cyan,
-            // sets the active color of the `BottomNavigationBar` if `Brightness` is light
-            primaryColor: Colors.lightBlue,
-            textTheme: Theme.of(context)
-                .textTheme
-                .copyWith(bodySmall: TextStyle(color: Colors.yellow))),
-        child: new BottomNavigationBar(
+          canvasColor: Colors.cyan,
+          primaryColor: Colors.lightBlue,
+          textTheme: Theme.of(context).textTheme.copyWith(
+            bodySmall: const TextStyle(color: Colors.yellow),
+          ),
+        ),
+        child: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: (index) {
             setState(() {
-              _currentIndex = index;
+              _currentIndex = index; // Gère directement sans null
             });
-            _controller.jumpToPage(_currentIndex);
+            _controller.jumpToPage(index); // Synchronisation
           },
           items: <BottomNavigationBarItem>[
             const BottomNavigationBarItem(
@@ -71,7 +72,7 @@ class _MonOnglet extends State<Onglet> {
             ),
             BottomNavigationBarItem(
               icon: const Icon(Icons.boy_rounded),
-              label: prenom,
+              label: prenom.isNotEmpty ? prenom : 'Profil', // Valeur par défaut
             ),
           ],
         ),

@@ -24,6 +24,9 @@ class _AccueilState extends State<Accueil> {
   final NbrePersonnes = TextEditingController();
   var latitude = 0.0;
   var longitude = 0.0;
+  static const String title = 'title';
+
+  static const Map<String, dynamic> Fr = {title: 'Localization'};
 
   @override
   void dispose() {
@@ -48,11 +51,38 @@ class _AccueilState extends State<Accueil> {
     return tmp;
   }
 
+  Future _selectDayAndTime(BuildContext context) async {
+
+    DateTime? _selectedDay = await showDatePicker(
+          context: context,
+          locale: const Locale("fr", "FR"),
+          initialDate: DateTime.now(),
+          firstDate: DateTime.now(),
+          lastDate: DateTime(2030),
+          builder: (BuildContext context, Widget? child) {
+            return Theme(
+              data: ThemeData.dark(),
+              child: child!,
+            );
+
+          },
+        );
+
+    TimeOfDay? _selectedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+
+
+    if(_selectedDay != null && _selectedTime != null) {
+      //a little check
+    }
+  }
   @override
   void initState() {
     super.initState();
   }
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -68,201 +98,213 @@ class _AccueilState extends State<Accueil> {
           ),
           new Container(
             color: Colors.white.withOpacity(0.7),
-          child: new Flex(
-            direction: Axis.vertical,
-            children: <Widget>[
-              Expanded(
-                flex: 7,
-                child: Container(
-                  height: 40,
-                  child: TextFormField(
-                    onChanged: _onChangeText,
-                    controller: Depart,
-                    decoration: InputDecoration(
-                      labelText: 'Votre point de Départ ',
-                      hintText: 'Votre point de Départ',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    validator: (value) {
-                      if (Depart.text.isEmpty) {
-                        return 'S\'il vous plaît entrez votre nom';
-                      }
-                      return null;
-                    },
-                  ),
-                ),
-              ),
-              Expanded(
-                flex: 7,
-                child: Container(
-                  height: 40,
-                  child: TextFormField(
-                    onChanged: _onChangeText,
-                    controller: Destination,
-                    decoration: InputDecoration(
-                      labelText: 'Votre destination',
-                      hintText: 'Votre destination',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    validator: (value) {
-                      if (Destination.text.isEmpty) {
-                        return 'S\'il vous plaît entrez votre destination';
-                      }
-                      return null;
-                    },
-                    onTap: () {
-                      Alert(
-                        context: context,
-                        type: AlertType.info,
-                        title: "Serez vous le conducteur",
-                        desc: "Serez vous le conducteur sur ce trajet ?",
-                        buttons: [
-                          DialogButton(
-                            child: Text(
-                              "Oui",
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 20),
+            child: new ListView(
+              children: [
+                Container(
+                  height: 400, // need this line to make it works
+                  color: Colors.blue[100],
+
+                  child: Flex(
+                    direction: Axis.vertical,
+                    children: <Widget>[
+                      Expanded(
+                        flex: 7,
+                        child: Container(
+                          height: 40,
+                          child: TextFormField(
+                            onChanged: _onChangeText,
+                            controller: Depart,
+                            decoration: InputDecoration(
+                              labelText: 'Votre point de Départ ',
+                              hintText: 'Votre point de Départ',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
                             ),
-                            onPressed: () {
-                              setState(() {
-                                estChauffeur = true;
-                              });
-                              debugPrint("!!!!!!!!!!!!!!"+estChauffeur.toString());
-                              Navigator.pop(context);
+                            validator: (value) {
+                              if (Depart.text.isEmpty) {
+                                return 'S\'il vous plaît entrez votre nom';
+                              }
+                              return null;
                             },
-                            width: 120,
                           ),
-                          DialogButton(
-                            child: Text(
-                              "Non",
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 20),
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                estChauffeur = false;
-                              });
-                              Navigator.pop(context);
-                            },
-                            width: 120,
-                          ),
-                        ],
-                      ).show();
-                    },
-                  ),
-                ),
-              ),
-              Expanded(
-                flex: 7,
-                child: Container(
-                  height: 40,
-                  child: TextFormField(
-                    onChanged: _onChangeText,
-                    controller: NbrePersonnes,
-                    decoration: InputDecoration(
-                      labelText: "Nombre de voyageurs",
-                      hintText: "Nombre de voyageurs",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
-                    ),
-                    validator: (value) {
-                      if (NbrePersonnes.text.isEmpty ||
-                          !NbrePersonnes.text.startsWith("@")) {
-                        return 'S\'il vous plaît entrez un nom correcte';
-                      }
-                      return null;
-                    },
-                  ),
-                ),
-              ),
-              Expanded(
-                flex: 7,
-                child: Container(
-                  height: 40,
-                  child: PickerItemWidget(
-                    pickerType: DateTimePickerType.datetime,
-                  ),
-                ),
-              ),
-              Column(
-                children: [
-                  CupertinoSwitch(
-                    value: estChauffeur,
-                    trackColor: Colors.blue,
-                    onChanged: (value) {
-                      setState(() {
-                        estChauffeur = value;
-                      });
-                    },
-                  ),
-                  Text("Vous êtes le conducteur "+ estChauffeur.toString()),
-                ],
-              ),
-              Expanded(
-                flex: 4,
-                child: TextButton(
-                  style: TextButton.styleFrom(
-                    fixedSize: const Size(200, 100),
-                    backgroundColor: Color(0xffF18265),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                  ),
-                  onPressed: () {
-                    if (_Rep == true && exec == false) {
-                      Alert(
-                        context: context,
-                        type: AlertType.success,
-                        title: "Merci !",
-                        desc: "La ligne a été ajoutée avec succès",
-                        buttons: [
-                          DialogButton(
-                            child: Text(
-                              "Fermer",
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 20),
+                      Expanded(
+                        flex: 7,
+                        child: Container(
+                          height: 40,
+                          child: TextFormField(
+                            onChanged: _onChangeText,
+                            controller: Destination,
+                            decoration: InputDecoration(
+                              labelText: 'Votre destination',
+                              hintText: 'Votre destination',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
                             ),
-                            onPressed: () => Navigator.pop(context),
-                            width: 120,
-                          )
-                        ],
-                      ).show();
-                      exec = true;
-                    } else {
-                      Alert(
-                        context: context,
-                        type: AlertType.error,
-                        title: "Merci !",
-                        desc: "La ligne n'a pas pu être ajoutée",
-                        buttons: [
-                          DialogButton(
-                            child: Text(
-                              "Fermer",
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 20),
+                            validator: (value) {
+                              if (Destination.text.isEmpty) {
+                                return 'S\'il vous plaît entrez votre destination';
+                              }
+                              return null;
+                            },
+                            onTap: () {
+                              Alert(
+                                context: context,
+                                type: AlertType.info,
+                                title: "Serez vous le conducteur",
+                                desc:
+                                    "Serez vous le conducteur sur ce trajet ?",
+                                buttons: [
+                                  DialogButton(
+                                    child: Text(
+                                      "Oui",
+                                      style: TextStyle(
+                                          color: Colors.white, fontSize: 20),
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        estChauffeur = true;
+                                      });
+                                      debugPrint("!!!!!!!!!!!!!!" +
+                                          estChauffeur.toString());
+                                      Navigator.pop(context);
+                                    },
+                                    width: 120,
+                                  ),
+                                  DialogButton(
+                                    child: Text(
+                                      "Non",
+                                      style: TextStyle(
+                                          color: Colors.white, fontSize: 20),
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        estChauffeur = false;
+                                      });
+                                      Navigator.pop(context);
+                                    },
+                                    width: 120,
+                                  ),
+                                ],
+                              ).show();
+                            },
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 7,
+                        child: Container(
+                          height: 40,
+                          child: TextFormField(
+                            onChanged: _onChangeText,
+                            controller: NbrePersonnes,
+                            decoration: InputDecoration(
+                              labelText: "Nombre de voyageurs",
+                              hintText: "Nombre de voyageurs",
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
                             ),
-                            onPressed: () => Navigator.pop(context),
-                            width: 120,
-                          )
+                            validator: (value) {
+                              if (NbrePersonnes.text.isEmpty ||
+                                  !NbrePersonnes.text.startsWith("@")) {
+                                return 'S\'il vous plaît entrez un nom correcte';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ),
+                      Localizations.override(
+                      context: context,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          _selectDayAndTime(context);
+                        },
+                        child: const Text('Show DateTime Picker'),
+                      ),
+                      ),
+                      Column(
+                        children: [
+                          CupertinoSwitch(
+                            value: estChauffeur,
+                            trackColor: Colors.blue,
+                            onChanged: (value) {
+                              setState(() {
+                                estChauffeur = value;
+                              });
+                            },
+                          ),
+                          Text("Vous êtes le conducteur " +
+                              estChauffeur.toString()),
                         ],
-                      ).show();
-                    }
-                  },
-                  child: Text(
-                    "Valider",
-                    style: TextStyle(
-                      color: Color(0xffffffff),
-                    ),
+                      ),
+                      Expanded(
+                        flex: 4,
+                        child: TextButton(
+                          style: TextButton.styleFrom(
+                            fixedSize: const Size(200, 100),
+                            backgroundColor: Color(0xffF18265),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                          onPressed: () {
+                            if (_Rep == true && exec == false) {
+                              Alert(
+                                context: context,
+                                type: AlertType.success,
+                                title: "Merci !",
+                                desc: "La ligne a été ajoutée avec succès",
+                                buttons: [
+                                  DialogButton(
+                                    child: Text(
+                                      "Fermer",
+                                      style: TextStyle(
+                                          color: Colors.white, fontSize: 20),
+                                    ),
+                                    onPressed: () => Navigator.pop(context),
+                                    width: 120,
+                                  )
+                                ],
+                              ).show();
+                              exec = true;
+                            } else {
+                              Alert(
+                                context: context,
+                                type: AlertType.error,
+                                title: "Merci !",
+                                desc: "La ligne n'a pas pu être ajoutée",
+                                buttons: [
+                                  DialogButton(
+                                    child: Text(
+                                      "Fermer",
+                                      style: TextStyle(
+                                          color: Colors.white, fontSize: 20),
+                                    ),
+                                    onPressed: () => Navigator.pop(context),
+                                    width: 120,
+                                  )
+                                ],
+                              ).show();
+                            }
+                          },
+                          child: Text(
+                            "Valider",
+                            style: TextStyle(
+                              color: Color(0xffffffff),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
           ),
         ],
       ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_session_manager/flutter_session_manager.dart';
 
+import 'Vues/accueil.dart';
 import 'Vues/onglet.dart';
 import 'Vues/profil.dart';
 
@@ -24,6 +26,14 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Zemiyidon',
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: [
+        Locale('fr'), // Français
+      ],
       home: FutureBuilder<bool>(
         future: checkSession(), // Appelle la méthode asynchrone
         builder: (context, snapshot) {

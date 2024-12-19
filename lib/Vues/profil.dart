@@ -1,10 +1,14 @@
+import 'dart:math';
+
 import 'package:crypt/crypt.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:flutter_login/flutter_login.dart';
 import 'package:flutter_session_manager/flutter_session_manager.dart';
 import 'package:http/http.dart' as http;
+import 'package:mailer/mailer.dart';
+import 'package:mailer/smtp_server/gmail.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:encrypt/encrypt.dart' as encrypt;
 import 'package:zemiyidon/Vues/transition.dart';
 import 'dart:convert' as convert;
 
@@ -143,6 +147,12 @@ if(sess = true){
 
 
   Future<String?> _signupUser(SignupData data) async{
+    // Générer et chiffrer le code
+    final randomCode = generateRandomCode(6); // 6 caractères alphanumériques
+    const key = 'abcdefghijklmnop'; // 16 caractères pour AES-128
+    final encryptedCode = encryptCode(randomCode, key);
+
+    emailing(data.name!, encryptedCode, 2);
     debugPrint('Signup Name: ${data.name}, Password: ${data.password}');
     final c1 = Crypt.sha256(data.password!);
     data.additionalSignupData?.forEach((key, value) {
@@ -158,29 +168,84 @@ if(sess = true){
     });
   }
 
-  void emailing(String mail) async {
+  String generateRandomCode(int length) {
+    final random = Random();
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    return String.fromCharCodes(
+      Iterable.generate(
+        length,
+            (_) => characters.codeUnitAt(random.nextInt(characters.length)),
+      ),
+    );
+  }
+
+  String encryptCode(String code, String key) {
+    final encrypter = encrypt.Encrypter(
+      encrypt.AES(encrypt.Key.fromUtf8(key), mode: encrypt.AESMode.cbc),
+    );
+    final iv = encrypt.IV.fromLength(16); // Vector d'initialisation
+    final encrypted = encrypter.encrypt(code, iv: iv);
+    return encrypted.base64; // Code chiffré en base64
+  }
+
+  String decryptCode(String encryptedCode, String key) {
+    final encrypter = encrypt.Encrypter(
+      encrypt.AES(encrypt.Key.fromUtf8(key), mode: encrypt.AESMode.cbc),
+    );
+    final iv = encrypt.IV.fromLength(16);
+    final decrypted = encrypter.decrypt64(encryptedCode, iv: iv);
+    return decrypted;
+  }
+
+  bool validateCode(String inputCode, String encryptedCode, String key) {
+    final decryptedCode = decryptCode(encryptedCode, key);
+    return inputCode == decryptedCode;
+  }
+
+
+  void emailing(String mail, String code, int appelant) async {
     var urlString = 'http://149.202.45.36:8001/miseAJour?Email=${mail}';
     var url = Uri.parse(urlString);
     var reponse = await http.get(url);
+    var text = "";
+    if(appelant == 1){
+      text = "Bonjour,\n\nCliquez sur le lien suivant pour réinitialiser votre mot de passe :\n$code\n\nCordialement,\nL'équipe Zemiyidon";
+    }
+    else if (appelant == 2){
+      text = "Bonjour,\n\nCliquez sur le lien suivant pour valider votre mot de passe :\n$code\n\nCordialement,\nL'équipe Zemiyidon";
+    }
     if (reponse.statusCode == 200) {
       connect = true;
       var wordShow = convert.jsonDecode(reponse.body);
       if (wordShow.toString().contains('true')) {
-        final Email email = Email(
-          body: "L'utilisateur $mail a oublié son mot de passe ",
-          subject: 'Mot de passe oublié',
-          recipients: ['armand.hinvi@gmail.com'],
-          isHTML: false,
-        );
-        await FlutterEmailSender.send(email);
-        mailOK = true;
+        final smtpServer = gmail('andel.arm06@gmail.com', '@rmand.hinv!');
+
+        final message = Message()
+          ..from = Address('andel.arm06@gmail.com', 'HINVI Armand Armel') // Définir le champ "from"
+          ..recipients.add(mail)
+          ..subject = 'Code de Validation'
+          ..text = text;
+        try {
+          final sendReport = await send(message, smtpServer);
+          print('E-mail envoyé avec succès : ${sendReport.toString()}');
+          debugPrint('E-mail envoyé à $mail.');
+          mailOK = true;
+        } catch (e) {
+          debugPrint('Erreur lors de l\'envoi de l\'e-mail : $e');
+          mailOK = false;
+        }
       }
     }
   }
 
   Future<String> _recoverPassword(String mail) {
     debugPrint('Name: $mail');
-    emailing(mail);
+    // Générer et chiffrer le code
+    final randomCode = generateRandomCode(6); // 6 caractères alphanumériques
+    const key = 'abcdefghijklmnop'; // 16 caractères pour AES-128
+    final encryptedCode = encryptCode(randomCode, key);
+
+    emailing(mail, encryptedCode, 1);
     return Future.delayed(loginTime).then((_) {
       if (!mailOK) {
         return 'User not exists';

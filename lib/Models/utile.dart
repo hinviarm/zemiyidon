@@ -72,3 +72,4 @@ if (jsonStringList == null) return []; // Retourne une liste vide si rien n'est 
 // Convertit chaque chaîne JSON en objet Tache
 return jsonStringList.map((jsonString) => Tache.fromJson(jsonDecode(jsonString))).toList();
 }
+
