@@ -53,12 +53,12 @@ class _AccueilState extends State<Accueil> {
 
   Future _selectDayAndTime(BuildContext context) async {
 
-    DateTime? _selectedDay = await showDatePicker(
+    DateTime? selectedDay = await showDatePicker(
           context: context,
           locale: const Locale("fr", "FR"),
           initialDate: DateTime.now(),
           firstDate: DateTime.now(),
-          lastDate: DateTime(2030),
+          lastDate: DateTime.now().add(Duration(days: 360)),
           builder: (BuildContext context, Widget? child) {
             return Theme(
               data: ThemeData.dark(),
@@ -74,7 +74,7 @@ class _AccueilState extends State<Accueil> {
     );
 
 
-    if(_selectedDay != null && _selectedTime != null) {
+    if(selectedDay != null && _selectedTime != null) {
       //a little check
     }
   }

@@ -38,6 +38,8 @@ class _MonProfil extends State<Profil> {
   String? teLephoneS = "";
   bool sess = false;
   bool mailOK = false;
+  //String message = "";
+  //List<String> recipents = [];
 
   @override
   void initState() {
@@ -151,8 +153,10 @@ if(sess = true){
     final randomCode = generateRandomCode(6); // 6 caractères alphanumériques
     const key = 'abcdefghijklmnop'; // 16 caractères pour AES-128
     final encryptedCode = encryptCode(randomCode, key);
-
-    emailing(data.name!, encryptedCode, 2);
+    bool envoye = await emailing(data.name!, encryptedCode, 2);
+    if (!envoye){
+      return null;
+    }
     debugPrint('Signup Name: ${data.name}, Password: ${data.password}');
     final c1 = Crypt.sha256(data.password!);
     data.additionalSignupData?.forEach((key, value) {
@@ -201,12 +205,24 @@ if(sess = true){
     final decryptedCode = decryptCode(encryptedCode, key);
     return inputCode == decryptedCode;
   }
+/*
+  void envoiMessage (String tel, String code, int appelant)async{
+    recipents.add(tel);
+    if(appelant == 1){
+      message = "Bonjour,\n\nCliquez sur le lien suivant pour réinitialiser votre mot de passe :\n$code\n\nCordialement,\nL'équipe Zemiyidon";
+    }
+    else if (appelant == 2){
+      message = "Bonjour,\n\nCliquez sur le lien suivant pour valider votre mot de passe :\n$code\n\nCordialement,\nL'équipe Zemiyidon";
+    }
+    String _result = await sendSMS(message: message, recipients: recipents, sendDirect: true)
+        .catchError((onError) {
+      print(onError);
+    });
+    print(_result);
+  }
+ */
 
-
-  void emailing(String mail, String code, int appelant) async {
-    var urlString = 'http://149.202.45.36:8001/miseAJour?Email=${mail}';
-    var url = Uri.parse(urlString);
-    var reponse = await http.get(url);
+  Future<bool> emailing(String mail, String code, int appelant) async {
     var text = "";
     if(appelant == 1){
       text = "Bonjour,\n\nCliquez sur le lien suivant pour réinitialiser votre mot de passe :\n$code\n\nCordialement,\nL'équipe Zemiyidon";
@@ -214,14 +230,12 @@ if(sess = true){
     else if (appelant == 2){
       text = "Bonjour,\n\nCliquez sur le lien suivant pour valider votre mot de passe :\n$code\n\nCordialement,\nL'équipe Zemiyidon";
     }
-    if (reponse.statusCode == 200) {
-      connect = true;
-      var wordShow = convert.jsonDecode(reponse.body);
-      if (wordShow.toString().contains('true')) {
-        final smtpServer = gmail('andel.arm06@gmail.com', '@rmand.hinv!');
+        //final smtpServer = gmail('andel.arm06@gmail.com', '@rmand.hinv!');
+        final smtpServer = gmail('zemiyidon@outlook.fr', 'armand.hinvi');
 
         final message = Message()
-          ..from = Address('andel.arm06@gmail.com', 'HINVI Armand Armel') // Définir le champ "from"
+          //..from = Address('andel.arm06@gmail.com', 'HINVI Armand Armel') // Définir le champ "from"
+          ..from = Address('zemiyidon@outlook.fr', 'HINVI Armand Armel') // Définir le champ "from"
           ..recipients.add(mail)
           ..subject = 'Code de Validation'
           ..text = text;
@@ -230,25 +244,27 @@ if(sess = true){
           print('E-mail envoyé avec succès : ${sendReport.toString()}');
           debugPrint('E-mail envoyé à $mail.');
           mailOK = true;
+          return true;
         } catch (e) {
           debugPrint('Erreur lors de l\'envoi de l\'e-mail : $e');
           mailOK = false;
+          return false;
         }
-      }
-    }
   }
 
-  Future<String> _recoverPassword(String mail) {
+  Future<String> _recoverPassword(String mail) async{
     debugPrint('Name: $mail');
     // Générer et chiffrer le code
     final randomCode = generateRandomCode(6); // 6 caractères alphanumériques
     const key = 'abcdefghijklmnop'; // 16 caractères pour AES-128
     final encryptedCode = encryptCode(randomCode, key);
-
-    emailing(mail, encryptedCode, 1);
+    bool envoye = await emailing(mail, encryptedCode, 1);
+    if (!envoye){
+      return "Votre adresse mail n'est pas valide" as Future<String>;
+    }
     return Future.delayed(loginTime).then((_) {
       if (!mailOK) {
-        return 'User not exists';
+        return 'délais trop long';
       }
       //emailing(mail);
       return 'Bonjour';
