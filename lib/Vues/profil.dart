@@ -80,14 +80,13 @@ class _MonProfil extends State<Profil> {
           'Telephone': telephone,
         }),
       );
-      if (!mounted) {
         debugPrint('Insertion réussie : ${response.statusCode}');
         await sessionManager.set("email", mail);
         await sessionManager.set("password", password);
         await sessionManager.set("nom", nom);
         await sessionManager.set("prenom", prenom);
         await sessionManager.set("telephone", telephone);
-      }
+        sess = true;
     } catch (e) {
       if (!mounted) {
         debugPrint('Erreur d\'insertion : $e');
@@ -223,35 +222,18 @@ if(sess = true){
  */
 
   Future<bool> emailing(String mail, String code, int appelant) async {
-    var text = "";
-    if(appelant == 1){
-      text = "Bonjour,\n\nCliquez sur le lien suivant pour réinitialiser votre mot de passe :\n$code\n\nCordialement,\nL'équipe Zemiyidon";
+    var urlString = 'http://149.202.45.36:8008/envoiMail?Email=${mail}&Code=${code}';
+    var url = Uri.parse(urlString);
+    var reponse = await http.get(url);
+    if (reponse.statusCode == 200) {
+      var wordShow = convert.jsonDecode(reponse.body);
+      debugPrint("wordShow : " + wordShow.toString());
+      if(wordShow.toString() == "true" || wordShow.toString() == "True"){
+        return true;
+      }
     }
-    else if (appelant == 2){
-      text = "Bonjour,\n\nCliquez sur le lien suivant pour valider votre mot de passe :\n$code\n\nCordialement,\nL'équipe Zemiyidon";
-    }
-        //final smtpServer = gmail('andel.arm06@gmail.com', '@rmand.hinv!');
-        final smtpServer = gmail('zemiyidon@outlook.fr', 'armand.hinvi');
-
-        final message = Message()
-          //..from = Address('andel.arm06@gmail.com', 'HINVI Armand Armel') // Définir le champ "from"
-          ..from = Address('zemiyidon@outlook.fr', 'HINVI Armand Armel') // Définir le champ "from"
-          ..recipients.add(mail)
-          ..subject = 'Code de Validation'
-          ..text = text;
-        try {
-          final sendReport = await send(message, smtpServer);
-          print('E-mail envoyé avec succès : ${sendReport.toString()}');
-          debugPrint('E-mail envoyé à $mail.');
-          mailOK = true;
-          return true;
-        } catch (e) {
-          debugPrint('Erreur lors de l\'envoi de l\'e-mail : $e');
-          mailOK = false;
-          return false;
-        }
+    return false;
   }
-
   Future<String> _recoverPassword(String mail) async{
     debugPrint('Name: $mail');
     // Générer et chiffrer le code
@@ -316,6 +298,7 @@ if(sess = true){
               pageColorDark: Colors.transparent,
             ),
             onSubmitAnimationCompleted: () {
+              debugPrint("rrrrrrrrrrrrrr: " + sess.toString());
     if (sess) {
       Navigator.of(context).pushReplacement(
         FadePageRoute(
