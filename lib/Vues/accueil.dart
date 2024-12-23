@@ -101,9 +101,7 @@ class _AccueilState extends State<Accueil> {
             child: new ListView(
               children: [
                 Container(
-                  height: 400, // need this line to make it works
-                  color: Colors.blue[100],
-
+                  height: 400,
                   child: Flex(
                     direction: Axis.vertical,
                     children: <Widget>[

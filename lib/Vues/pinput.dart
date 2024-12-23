@@ -44,17 +44,17 @@ class _PinputCodeState extends State<PinputCode> {
     super.dispose();
   }
 
-  Future<void> recupSess() async{
+  Future<void> recupSess() async {
     mail = await sessionManager.get("email");
     password = await sessionManager.get("password");
     nom = await sessionManager.get("nom");
     prenom = await sessionManager.get("prenom");
     telephone = await sessionManager.get("telephone");
-    await insertion(mail!, password!, nom!, prenom!, telephone! );
+    await insertion(mail!, password!, nom!, prenom!, telephone!);
   }
 
-
-  Future<void> insertion(String mail, String password, String nom, String prenom, String telephone ) async {
+  Future<void> insertion(String mail, String password, String nom,
+      String prenom, String telephone) async {
     var urlStringPost = 'http://149.202.45.36:8008/insertion';
     var urlPost = Uri.parse(urlStringPost);
     try {
@@ -79,7 +79,6 @@ class _PinputCodeState extends State<PinputCode> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     const focusedBorderColor = Color.fromRGBO(23, 171, 144, 1);
@@ -102,108 +101,109 @@ class _PinputCodeState extends State<PinputCode> {
     /// Optionally you can use form to validate the Pinput
     return Scaffold(
       body: new Stack(
-          children: <Widget>[
-      new Container(
-      decoration: new BoxDecoration(
-      image: new DecorationImage(
-      image: new AssetImage("images/fond.jpg"),
-      fit: BoxFit.cover,
-    ),
-    ),
-    ),
-    new Container(
-    color: Colors.white.withOpacity(0.7),
-    child:Form(
-      key: formKey,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Directionality(
-            // Specify direction if desired
-            textDirection: TextDirection.ltr,
-            child: Pinput(
-              length: 4,
-              keyboardType: TextInputType.number,
-              controller: pinController,
-              defaultPinTheme: defaultPinTheme,
-              //focusedPinTheme: focusedPinTheme,
-              //submittedPinTheme: submittedPinTheme,
-              pinputAutovalidateMode: PinputAutovalidateMode.onSubmit,
-              textInputAction: TextInputAction.next,
-              showCursor: true,
-              separatorBuilder: (index) => const SizedBox(width: 8),
-              validator: (value) {
-                if(n>0) {
-                  n = n - 1;
-                  return value == widget.code
-                      ? null
-                      : 'Mauvais code \nIl vous reste ' + n.toString() + ' essai(s)';
-                }
-                else {
-                  SessionManager().destroy();
-                  Navigator.of(context).pushReplacement(
-                    FadePageRoute(
-                      builder: (context) => Profil(),
-                    ),
-                  );
-                }
-              },
-              hapticFeedbackType: HapticFeedbackType.lightImpact,
-              onCompleted: (pin) {
-                if(pin == widget.code) {
-                  recupSess();
-                  Navigator.of(context).pushReplacement(
-                    FadePageRoute(
-                      builder: (context) => Onglet(),
-                    ),
-                  );
-                }
-              },
-              onChanged: (value) {
-                debugPrint('onChanged: $value');
-              },
-              cursor: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Container(
-                    margin: const EdgeInsets.only(bottom: 9),
-                    width: 22,
-                    height: 1,
-                    color: focusedBorderColor,
-                  ),
-                ],
-              ),
-              focusedPinTheme: defaultPinTheme.copyWith(
-                decoration: defaultPinTheme.decoration!.copyWith(
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: focusedBorderColor),
-                ),
-              ),
-              submittedPinTheme: defaultPinTheme.copyWith(
-                decoration: defaultPinTheme.decoration!.copyWith(
-                  color: fillColor,
-                  borderRadius: BorderRadius.circular(19),
-                  border: Border.all(color: focusedBorderColor),
-                ),
-              ),
-              errorPinTheme: defaultPinTheme.copyBorderWith(
-                border: Border.all(color: Colors.redAccent),
+        children: <Widget>[
+          new Container(
+            decoration: new BoxDecoration(
+              image: new DecorationImage(
+                image: new AssetImage("images/fond.jpg"),
+                fit: BoxFit.cover,
               ),
             ),
           ),
-          TextButton(
-            onPressed: () {
-              focusNode.unfocus();
-              formKey.currentState!.validate();
-            },
-            child: const Text('Validate'),
+          new Container(
+            color: Colors.white.withOpacity(0.7),
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Directionality(
+                    // Specify direction if desired
+                    textDirection: TextDirection.ltr,
+                    child: Pinput(
+                      length: 4,
+                      keyboardType: TextInputType.number,
+                      controller: pinController,
+                      defaultPinTheme: defaultPinTheme,
+                      //focusedPinTheme: focusedPinTheme,
+                      //submittedPinTheme: submittedPinTheme,
+                      pinputAutovalidateMode: PinputAutovalidateMode.onSubmit,
+                      textInputAction: TextInputAction.next,
+                      showCursor: true,
+                      separatorBuilder: (index) => const SizedBox(width: 8),
+                      validator: (value) {
+                        if (n > 0) {
+                          n = n - 1;
+                          return value == widget.code
+                              ? null
+                              : 'Mauvais code \nIl vous reste ' +
+                                  n.toString() +
+                                  ' essai(s)';
+                        } else {
+                          SessionManager().destroy();
+                          Navigator.of(context).pushReplacement(
+                            FadePageRoute(
+                              builder: (context) => Profil(),
+                            ),
+                          );
+                        }
+                      },
+                      hapticFeedbackType: HapticFeedbackType.lightImpact,
+                      onCompleted: (pin) {
+                        if (pin == widget.code) {
+                          recupSess();
+                          Navigator.of(context).pushReplacement(
+                            FadePageRoute(
+                              builder: (context) => Onglet(),
+                            ),
+                          );
+                        }
+                      },
+                      onChanged: (value) {
+                        debugPrint('onChanged: $value');
+                      },
+                      cursor: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 9),
+                            width: 22,
+                            height: 1,
+                            color: focusedBorderColor,
+                          ),
+                        ],
+                      ),
+                      focusedPinTheme: defaultPinTheme.copyWith(
+                        decoration: defaultPinTheme.decoration!.copyWith(
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: focusedBorderColor),
+                        ),
+                      ),
+                      submittedPinTheme: defaultPinTheme.copyWith(
+                        decoration: defaultPinTheme.decoration!.copyWith(
+                          color: fillColor,
+                          borderRadius: BorderRadius.circular(19),
+                          border: Border.all(color: focusedBorderColor),
+                        ),
+                      ),
+                      errorPinTheme: defaultPinTheme.copyBorderWith(
+                        border: Border.all(color: Colors.redAccent),
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      focusNode.unfocus();
+                      formKey.currentState!.validate();
+                    },
+                    child: const Text('Validate'),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
-    ),
-    ),
-    ],
-    ),
     );
   }
 }

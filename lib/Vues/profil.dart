@@ -23,7 +23,7 @@ class Profil extends StatefulWidget {
 }
 
 class _MonProfil extends State<Profil> {
-  Duration get loginTime => Duration(milliseconds: 2250);
+  Duration get loginTime => Duration(milliseconds: 250);
   var sessionManager = SessionManager();
   bool connect = false;
   String? id = '';
@@ -96,13 +96,12 @@ class _MonProfil extends State<Profil> {
           mDP = elem[4];
           debugPrint('$elem');
         }
-        debugPrint("jjjjjj " + mDP.toString() + "   §§§  " + password);
         final h = Crypt(mDP!);
         if (h.match(password)) {
           sess = true;
         }
       });
-      if (sess = true) {
+      if (sess == true || insert == true) {
         await sessionManager.set("email", id);
         await sessionManager.set("password", mDP);
         await sessionManager.set("nom", nOmS);
@@ -191,20 +190,26 @@ class _MonProfil extends State<Profil> {
     return false;
   }
 
-  Future<String> _recoverPassword(String mail) async {
+  Future<String?> _recoverPassword(String mail) async {
     debugPrint('Name: $mail');
-    // Générer et chiffrer le code
+    insert = true;
+    sessionConnect(mail, "");
     randomCode = generateRandomCode(4);
     bool envoye = await emailing(mail, randomCode, 1);
     if (!envoye) {
       return "Votre adresse mail n'est pas valide" as Future<String>;
     }
+    else {
+      Navigator.of(context).pushReplacement(
+        FadePageRoute(
+          //builder: (context) => const Onglet(),
+          builder: (context) => PinputCode(code: randomCode),
+        ),
+      );
+    }
     return Future.delayed(loginTime).then((_) {
-      if (!mailOK) {
-        return 'délais trop long';
-      }
-      //emailing(mail);
-      return 'Bonjour';
+      if (!mounted) return null;
+      return null;
     });
   }
 
