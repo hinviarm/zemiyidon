@@ -1,8 +1,13 @@
 import 'package:board_datetime_picker/board_datetime_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_session_manager/flutter_session_manager.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:intl/intl.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:switcher_button/switcher_button.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert' as convert;
 
 class Accueil extends StatefulWidget {
   const Accueil({super.key});
@@ -15,6 +20,7 @@ class _AccueilState extends State<Accueil> {
   var _Depart = '';
   var _Destination = '';
   var _NbrePersonnes = '';
+
   bool? _Rep;
   bool exec = false;
   bool estChauffeur = false;
@@ -24,6 +30,10 @@ class _AccueilState extends State<Accueil> {
   final NbrePersonnes = TextEditingController();
   var latitude = 0.0;
   var longitude = 0.0;
+  DateTime? selectedDay = null;
+  TimeOfDay? _selectedTime = null;
+  DateTime? dateVoyage = null;
+  String dateAffiche = "Selectionnez la date";
   static const String title = 'title';
 
   static const Map<String, dynamic> Fr = {title: 'Localization'};
@@ -51,9 +61,92 @@ class _AccueilState extends State<Accueil> {
     return tmp;
   }
 
-  Future _selectDayAndTime(BuildContext context) async {
+  Future<void> insertionChauffeur() async{
 
-    DateTime? selectedDay = await showDatePicker(
+    List<Location> locationDest = [];
+    List<Location> locationDep = [];
+    try{
+      locationDep = await locationFromAddress(Depart.text);
+    }
+    catch (e){
+      Alert(
+        context: context,
+        type: AlertType.error,
+        title: "Adresse non reconnu",
+        desc:
+        "L'adresse de départ n'est pas correcte",
+        buttons: [
+          DialogButton(
+            child: Text(
+              "Fermer",
+              style: TextStyle(
+                  color: Colors.white, fontSize: 20),
+            ),
+            onPressed: () =>
+              Navigator.pop(context),
+            width: 120,
+          ),
+        ],
+      ).show();
+      return;
+    }
+
+    try{
+      locationDest = await locationFromAddress(Destination.text);
+    }
+    catch(e){
+      Alert(
+        context: context,
+        type: AlertType.error,
+        title: "Adresse non reconnu",
+        desc:
+        "L'adresse de destination n'est pas correcte",
+        buttons: [
+          DialogButton(
+            child: Text(
+              "Fermer",
+              style: TextStyle(
+                  color: Colors.white, fontSize: 20),
+            ),
+            onPressed: () =>
+                Navigator.pop(context),
+            width: 120,
+          ),
+        ],
+      ).show();
+      return;
+    }
+    var urlStringPost = 'http://149.202.45.36:8008/insertion';
+    var urlPost = Uri.parse(urlStringPost);
+    try {
+      var response = await http.post(
+        urlPost,
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: convert.jsonEncode(<String, dynamic>{
+          'Email': SessionManager().get("Email"),
+          'dateDepart': dateVoyage!,
+          'NombrePlaces': NbrePersonnes.text,
+          'QuartierDepart': Depart.text,
+          'DepartLogitude': locationDep.first.longitude,
+          'DepartLatitude': locationDep.first.latitude,
+          'QuartierDest': Destination.text,
+          'DestLogitude': locationDest.first.longitude,
+          'DesttLatitude': locationDest.first.latitude,
+        }),
+      );
+      debugPrint('Insertion réussie : ${response.statusCode}');
+    } catch (e) {
+      if (!mounted) {
+        debugPrint('Erreur d\'insertion : $e');
+      }
+    }
+  }
+
+  void _selectDayAndTime(BuildContext context) async {
+
+    selectedDay = await showDatePicker(
           context: context,
           locale: const Locale("fr", "FR"),
           initialDate: DateTime.now(),
@@ -68,14 +161,19 @@ class _AccueilState extends State<Accueil> {
           },
         );
 
-    TimeOfDay? _selectedTime = await showTimePicker(
+    _selectedTime = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
     );
 
-
     if(selectedDay != null && _selectedTime != null) {
-      //a little check
+      var datestr = selectedDay.toString().substring(0,10);
+      var timestr = '${_selectedTime?.hour.toString().padLeft(2, '0')}:${_selectedTime?.minute.toString().padLeft(2, '0')}';
+      String newDate = (datestr + " "+timestr.substring(0, 5) + ":00.000");
+      dateVoyage = DateTime.parse(newDate);
+      setState(() {
+        dateAffiche = DateFormat('yyyy-MM-dd – kk:mm').format(dateVoyage!);
+      });
     }
   }
   @override
@@ -113,6 +211,7 @@ class _AccueilState extends State<Accueil> {
                             onChanged: _onChangeText,
                             controller: Depart,
                             decoration: InputDecoration(
+                              icon: Icon(Icons.directions_car_filled),
                               labelText: 'Votre point de Départ ',
                               hintText: 'Votre point de Départ',
                               border: OutlineInputBorder(
@@ -136,6 +235,7 @@ class _AccueilState extends State<Accueil> {
                             onChanged: _onChangeText,
                             controller: Destination,
                             decoration: InputDecoration(
+                              icon: Icon(Icons.flag),
                               labelText: 'Votre destination',
                               hintText: 'Votre destination',
                               border: OutlineInputBorder(
@@ -166,8 +266,6 @@ class _AccueilState extends State<Accueil> {
                                       setState(() {
                                         estChauffeur = true;
                                       });
-                                      debugPrint("!!!!!!!!!!!!!!" +
-                                          estChauffeur.toString());
                                       Navigator.pop(context);
                                     },
                                     width: 120,
@@ -197,22 +295,18 @@ class _AccueilState extends State<Accueil> {
                         child: Container(
                           height: 40,
                           child: TextFormField(
+                            keyboardType: TextInputType.number,
+                            autocorrect: false,
                             onChanged: _onChangeText,
                             controller: NbrePersonnes,
                             decoration: InputDecoration(
-                              labelText: "Nombre de voyageurs",
-                              hintText: "Nombre de voyageurs",
+                              icon: Icon(Icons.people),
+                              labelText: estChauffeur? "Nombre de places disponibles" :"Nombre de voyageurs",
+                              hintText: estChauffeur? "Nombre de places disponibles" :"Nombre de voyageurs",
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                            validator: (value) {
-                              if (NbrePersonnes.text.isEmpty ||
-                                  !NbrePersonnes.text.startsWith("@")) {
-                                return 'S\'il vous plaît entrez un nom correcte';
-                              }
-                              return null;
-                            },
                           ),
                         ),
                       ),
@@ -222,7 +316,7 @@ class _AccueilState extends State<Accueil> {
                         onPressed: () async {
                           _selectDayAndTime(context);
                         },
-                        child: const Text('Show DateTime Picker'),
+                        child: Text(dateAffiche),
                       ),
                       ),
                       Column(
@@ -236,8 +330,7 @@ class _AccueilState extends State<Accueil> {
                               });
                             },
                           ),
-                          Text("Vous êtes le conducteur " +
-                              estChauffeur.toString()),
+                          estChauffeur? Text("Vous êtes le conducteur "): Text("Vous êtes passager"),
                         ],
                       ),
                       Expanded(
@@ -250,7 +343,33 @@ class _AccueilState extends State<Accueil> {
                               borderRadius: BorderRadius.circular(20),
                             ),
                           ),
-                          onPressed: () {
+                          onPressed: () async{
+                            // Insertion si chauffeur et recherche si voyageur
+                            if(estChauffeur){
+                              await insertionChauffeur();
+                            }
+                            if(NbrePersonnes.text.isEmpty){
+                              Alert(
+                                context: context,
+                                type: AlertType.error,
+                                title: estChauffeur ?"Nombre de places disponibles": "Nombre de voyageurs",
+                                desc:
+                                estChauffeur ?"Nombre de places disponibles pour le voyage": "Nombre de voyageurs vous y compris",
+                                buttons: [
+                                  DialogButton(
+                                    child: Text(
+                                      "Fermer",
+                                      style: TextStyle(
+                                          color: Colors.white, fontSize: 20),
+                                    ),
+                                    onPressed: () =>
+                                        Navigator.pop(context),
+                                    width: 120,
+                                  ),
+                                ],
+                              ).show();
+                              return;
+                            }
                             if (_Rep == true && exec == false) {
                               Alert(
                                 context: context,
