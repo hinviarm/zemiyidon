@@ -116,7 +116,7 @@ class _AccueilState extends State<Accueil> {
       ).show();
       return;
     }
-    var urlStringPost = 'http://149.202.45.36:8008/insertion';
+    var urlStringPost = 'http://149.202.45.36:8008/insertionchauffeur';
     var urlPost = Uri.parse(urlStringPost);
     try {
       var response = await http.post(
@@ -126,14 +126,14 @@ class _AccueilState extends State<Accueil> {
         },
         body: convert.jsonEncode(<String, dynamic>{
           'Email': SessionManager().get("Email"),
-          'dateDepart': dateVoyage!,
+          'DateDepart': dateVoyage!,
           'NombrePlaces': NbrePersonnes.text,
           'QuartierDepart': Depart.text,
           'DepartLogitude': locationDep.first.longitude,
           'DepartLatitude': locationDep.first.latitude,
           'QuartierDest': Destination.text,
           'DestLogitude': locationDest.first.longitude,
-          'DesttLatitude': locationDest.first.latitude,
+          'DestLatitude': locationDest.first.latitude,
         }),
       );
       debugPrint('Insertion réussie : ${response.statusCode}');
