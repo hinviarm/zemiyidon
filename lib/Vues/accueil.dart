@@ -24,6 +24,7 @@ class _AccueilState extends State<Accueil> {
   bool? _Rep;
   bool exec = false;
   bool estChauffeur = false;
+  bool insert = false;
 
   final Depart = TextEditingController();
   final Destination = TextEditingController();
@@ -34,6 +35,7 @@ class _AccueilState extends State<Accueil> {
   TimeOfDay? _selectedTime = null;
   DateTime? dateVoyage = null;
   String dateAffiche = "Selectionnez la date";
+  String dateAfficheAPI = "0000-00-00 00:00";
   static const String title = 'title';
 
   static const Map<String, dynamic> Fr = {title: 'Localization'};
@@ -116,31 +118,36 @@ class _AccueilState extends State<Accueil> {
       ).show();
       return;
     }
+    String? email = await SessionManager().get("email");
+    debugPrint("Voici votre email : ${email!}");
     var urlStringPost = 'http://149.202.45.36:8008/insertionchauffeur';
     var urlPost = Uri.parse(urlStringPost);
+    var body= convert.jsonEncode({
+      'Email': email!,
+      'DateDepart': dateAfficheAPI,
+      'NombrePlaces': int.parse(NbrePersonnes.text),
+      'QuartierDepart': Depart.text,
+      'DepartLogitude': locationDep.first.longitude,
+      'DepartLatitude': locationDep.first.latitude,
+      'QuartierDest': Destination.text,
+      'DestLogitude': locationDest.first.longitude,
+      'DestLatitude': locationDest.first.latitude,
+    });
+
     try {
       var response = await http.post(
         urlPost,
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: convert.jsonEncode(<String, dynamic>{
-          'Email': SessionManager().get("Email"),
-          'DateDepart': dateVoyage!,
-          'NombrePlaces': NbrePersonnes.text,
-          'QuartierDepart': Depart.text,
-          'DepartLogitude': locationDep.first.longitude,
-          'DepartLatitude': locationDep.first.latitude,
-          'QuartierDest': Destination.text,
-          'DestLogitude': locationDest.first.longitude,
-          'DestLatitude': locationDest.first.latitude,
-        }),
+        headers: {'Content-Type': 'application/json'},
+        body: body,
       );
-      debugPrint('Insertion réussie : ${response.statusCode}');
-    } catch (e) {
-      if (!mounted) {
-        debugPrint('Erreur d\'insertion : $e');
+      print('Statut de la réponse : ${response.statusCode}');
+      print('Corps de la réponse : ${response.body}');
+      if(response.statusCode == 200){
+        debugPrint('Insertion réussie : ${response.statusCode}');
+        insert = true;
       }
+    } catch (e) {
+      print('Erreur : $e');
     }
   }
 
@@ -173,6 +180,7 @@ class _AccueilState extends State<Accueil> {
       dateVoyage = DateTime.parse(newDate);
       setState(() {
         dateAffiche = DateFormat('yyyy-MM-dd – kk:mm').format(dateVoyage!);
+        dateAfficheAPI = DateFormat('yyyy-MM-dd kk:mm:ss').format(dateVoyage!);
       });
     }
   }
@@ -345,9 +353,6 @@ class _AccueilState extends State<Accueil> {
                           ),
                           onPressed: () async{
                             // Insertion si chauffeur et recherche si voyageur
-                            if(estChauffeur){
-                              await insertionChauffeur();
-                            }
                             if(NbrePersonnes.text.isEmpty){
                               Alert(
                                 context: context,
@@ -370,7 +375,10 @@ class _AccueilState extends State<Accueil> {
                               ).show();
                               return;
                             }
-                            if (_Rep == true && exec == false) {
+                            if(estChauffeur){
+                              await insertionChauffeur();
+                            }
+                            if (insert) {
                               Alert(
                                 context: context,
                                 type: AlertType.success,
@@ -393,7 +401,7 @@ class _AccueilState extends State<Accueil> {
                               Alert(
                                 context: context,
                                 type: AlertType.error,
-                                title: "Merci !",
+                                title: "Désolé !",
                                 desc: "La ligne n'a pas pu être ajoutée",
                                 buttons: [
                                   DialogButton(

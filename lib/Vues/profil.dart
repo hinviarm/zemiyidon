@@ -118,7 +118,7 @@ class _MonProfil extends State<Profil> {
     debugPrint('Name: ${data.name}, Password: ${c1.toString()}');
     return Future.delayed(loginTime).then((_) async {
       await sessionConnect(data.name, data.password);
-      if (!connect) {
+      if (!connect || !sess) {
         return 'Identifiants ou Mot de passe incorrect';
       }
       return null;
