@@ -1,4 +1,5 @@
 import 'package:board_datetime_picker/board_datetime_picker.dart';
+import 'package:cache_storage/cache_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_session_manager/flutter_session_manager.dart';
@@ -9,6 +10,8 @@ import 'package:switcher_button/switcher_button.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert' as convert;
 
+import '../Models/villes.dart';
+
 class Accueil extends StatefulWidget {
   const Accueil({super.key});
 
@@ -17,28 +20,73 @@ class Accueil extends StatefulWidget {
 }
 
 class _AccueilState extends State<Accueil> {
-  var _Depart = '';
-  var _Destination = '';
-  var _NbrePersonnes = '';
 
   bool? _Rep;
   bool exec = false;
   bool estChauffeur = false;
   bool insert = false;
 
+  final cacheStorage = CacheStorage.open();
   final Depart = TextEditingController();
   final Destination = TextEditingController();
   final NbrePersonnes = TextEditingController();
   var latitude = 0.0;
   var longitude = 0.0;
+  List<String> arrets = [];
+  List<Villes> villes = [];
+  List<String> _depart = [];
+  List<String> _destination = [];
   DateTime? selectedDay = null;
   TimeOfDay? _selectedTime = null;
   DateTime? dateVoyage = null;
   String dateAffiche = "Selectionnez la date";
-  String dateAfficheAPI = "0000-00-00 00:00";
+  String dateAfficheAPI = "0000-00-00 00:00:00";
   static const String title = 'title';
 
   static const Map<String, dynamic> Fr = {title: 'Localization'};
+  late BuildContext dialogContext;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    dialogContext = context; // Sauvegarde le contexte ici
+  }
+
+  Future<void> _Detection() async {
+    if (!cacheStorage.has(key: 'villes')) {
+      var urlString = 'http://149.202.45.36:8008/ville';
+      var url = Uri.parse(urlString);
+      var response = await http.get(url);
+      if (response.statusCode == 200) {
+        //var wordShow = (convert.jsonDecode(response.body)as List)?.map((item) => item as String)?.toList();
+
+        villes = [];
+        var wordShow = convert.jsonDecode(response.body);
+        if (wordShow.toString() != "[]") {
+          for (var elem in wordShow) {
+            elem = elem
+                .toString()
+                .replaceAll("[", "")
+                .replaceAll("]", "")
+                .split(", ");
+            villes.add(new Villes(int.parse(elem[0]), elem[1], elem[2]));
+            arrets.add(elem[2]);
+          }
+          cacheStorage.save(
+            key: 'villes',
+            value: villes,
+          );
+        }
+      }
+    } else {
+      if (villes.isEmpty) {
+        villes = cacheStorage.match(key: 'villes') ?? [];
+      }
+
+      // Ajout des arrêts à partir des villes
+      arrets = villes.map((elem) => elem.Arret).toList();
+    }
+  }
 
   @override
   void dispose() {
@@ -46,6 +94,7 @@ class _AccueilState extends State<Accueil> {
     Depart.dispose();
     Destination.dispose();
     NbrePersonnes.dispose();
+    //cacheStorage.delete();
     super.dispose();
   }
 
@@ -56,6 +105,24 @@ class _AccueilState extends State<Accueil> {
 
   _onSubmittedText(value) => debugPrint("_onSubmittedText: $value");
 
+  void _onSearchChanged(String query) async{
+    await _Detection();
+    setState(() {
+      _depart = arrets
+          .where((item) => item.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    });
+  }
+
+  void _onDestinationChanged(String query) async{
+    await _Detection();
+    setState(() {
+      _destination = arrets
+          .where((item) => item.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    });
+  }
+
   String endwithSpace(tmp) {
     while (tmp.endsWith(' ')) {
       tmp = tmp.substring(0, tmp.length - 1);
@@ -63,29 +130,27 @@ class _AccueilState extends State<Accueil> {
     return tmp;
   }
 
-  Future<void> insertionChauffeur() async{
-
+  Future<void> insertionChauffeur() async {
     List<Location> locationDest = [];
     List<Location> locationDep = [];
-    try{
-      locationDep = await locationFromAddress(Depart.text);
-    }
-    catch (e){
+    try {
+      if(arrets.contains(Depart.text)) {
+        locationDep = await locationFromAddress(Depart.text);
+      }
+      else {throw new FormatException();}
+    } catch (e) {
       Alert(
         context: context,
         type: AlertType.error,
         title: "Adresse non reconnu",
-        desc:
-        "L'adresse de départ n'est pas correcte",
+        desc: "L'adresse de départ n'est pas correcte. Saissisez un nom de ville Béninoise",
         buttons: [
           DialogButton(
             child: Text(
               "Fermer",
-              style: TextStyle(
-                  color: Colors.white, fontSize: 20),
+              style: TextStyle(color: Colors.white, fontSize: 20),
             ),
-            onPressed: () =>
-              Navigator.pop(context),
+            onPressed: () => Navigator.pop(context),
             width: 120,
           ),
         ],
@@ -93,25 +158,24 @@ class _AccueilState extends State<Accueil> {
       return;
     }
 
-    try{
-      locationDest = await locationFromAddress(Destination.text);
-    }
-    catch(e){
+    try {
+      if(arrets.contains(Destination.text)) {
+        locationDest = await locationFromAddress(Destination.text);
+      }
+      else{ throw new FormatException();}
+    } catch (e) {
       Alert(
         context: context,
         type: AlertType.error,
         title: "Adresse non reconnu",
-        desc:
-        "L'adresse de destination n'est pas correcte",
+        desc: "L'adresse de destination n'est pas correcte. Saissisez un nom de ville Béninoise",
         buttons: [
           DialogButton(
             child: Text(
               "Fermer",
-              style: TextStyle(
-                  color: Colors.white, fontSize: 20),
+              style: TextStyle(color: Colors.white, fontSize: 20),
             ),
-            onPressed: () =>
-                Navigator.pop(context),
+            onPressed: () => Navigator.pop(context),
             width: 120,
           ),
         ],
@@ -122,7 +186,7 @@ class _AccueilState extends State<Accueil> {
     debugPrint("Voici votre email : ${email!}");
     var urlStringPost = 'http://149.202.45.36:8008/insertionchauffeur';
     var urlPost = Uri.parse(urlStringPost);
-    var body= convert.jsonEncode({
+    var body = convert.jsonEncode({
       'Email': email!,
       'DateDepart': dateAfficheAPI,
       'NombrePlaces': int.parse(NbrePersonnes.text),
@@ -142,7 +206,7 @@ class _AccueilState extends State<Accueil> {
       );
       print('Statut de la réponse : ${response.statusCode}');
       print('Corps de la réponse : ${response.body}');
-      if(response.statusCode == 200){
+      if (response.statusCode == 200) {
         debugPrint('Insertion réussie : ${response.statusCode}');
         insert = true;
       }
@@ -152,31 +216,30 @@ class _AccueilState extends State<Accueil> {
   }
 
   void _selectDayAndTime(BuildContext context) async {
-
     selectedDay = await showDatePicker(
-          context: context,
-          locale: const Locale("fr", "FR"),
-          initialDate: DateTime.now(),
-          firstDate: DateTime.now(),
-          lastDate: DateTime.now().add(Duration(days: 360)),
-          builder: (BuildContext context, Widget? child) {
-            return Theme(
-              data: ThemeData.dark(),
-              child: child!,
-            );
-
-          },
+      context: context,
+      locale: const Locale("fr", "FR"),
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(Duration(days: 360)),
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: ThemeData.dark(),
+          child: child!,
         );
+      },
+    );
 
     _selectedTime = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
     );
 
-    if(selectedDay != null && _selectedTime != null) {
-      var datestr = selectedDay.toString().substring(0,10);
-      var timestr = '${_selectedTime?.hour.toString().padLeft(2, '0')}:${_selectedTime?.minute.toString().padLeft(2, '0')}';
-      String newDate = (datestr + " "+timestr.substring(0, 5) + ":00.000");
+    if (selectedDay != null && _selectedTime != null) {
+      var datestr = selectedDay.toString().substring(0, 10);
+      var timestr =
+          '${_selectedTime?.hour.toString().padLeft(2, '0')}:${_selectedTime?.minute.toString().padLeft(2, '0')}';
+      String newDate = (datestr + " " + timestr.substring(0, 5) + ":00.000");
       dateVoyage = DateTime.parse(newDate);
       setState(() {
         dateAffiche = DateFormat('yyyy-MM-dd – kk:mm').format(dateVoyage!);
@@ -184,11 +247,13 @@ class _AccueilState extends State<Accueil> {
       });
     }
   }
+
   @override
   void initState() {
+    _Detection();
     super.initState();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -213,89 +278,84 @@ class _AccueilState extends State<Accueil> {
                     children: <Widget>[
                       Expanded(
                         flex: 7,
-                        child: Container(
-                          height: 40,
-                          child: TextFormField(
-                            onChanged: _onChangeText,
-                            controller: Depart,
-                            decoration: InputDecoration(
-                              icon: Icon(Icons.directions_car_filled),
-                              labelText: 'Votre point de Départ ',
-                              hintText: 'Votre point de Départ',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
+                        child: Column(
+                          children: [
+                            Container(
+                              height: 40,
+                              child: TextFormField(
+                                controller: Depart,
+                                onChanged: _onSearchChanged,
+                                decoration: InputDecoration(
+                                  labelText: 'Votre point de Départ ',
+                                  hintText: 'Votre point de Départ',
+                                  prefixIcon: Icon(Icons.directions_car_filled),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
                               ),
                             ),
-                            validator: (value) {
-                              if (Depart.text.isEmpty) {
-                                return 'S\'il vous plaît entrez votre nom';
-                              }
-                              return null;
-                            },
-                          ),
+                            if (_depart
+                                .isNotEmpty) // Condition pour afficher la liste
+                              Expanded(
+                                child: ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: _depart.length,
+                                  itemBuilder: (context, index) {
+                                    return ListTile(
+                                      title: Text(_depart[index]),
+                                      onTap: () {
+                                        Depart.text = _depart[index];
+                                        _depart.clear();
+                                        setState(() {});
+                                      },
+                                    );
+                                  },
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                       Expanded(
                         flex: 7,
-                        child: Container(
-                          height: 40,
-                          child: TextFormField(
-                            onChanged: _onChangeText,
-                            controller: Destination,
-                            decoration: InputDecoration(
-                              icon: Icon(Icons.flag),
-                              labelText: 'Votre destination',
-                              hintText: 'Votre destination',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
+                        child: Column(
+                          children: [
+                            Container(
+                              height: 40,
+                              child: TextFormField(
+                                controller: Destination,
+                                onChanged: _onDestinationChanged,
+                                decoration: InputDecoration(
+                                  labelText: 'Votre destination',
+                                  hintText: 'Votre destination',
+                                  prefixIcon: Icon(Icons.flag),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
                               ),
                             ),
-                            validator: (value) {
-                              if (Destination.text.isEmpty) {
-                                return 'S\'il vous plaît entrez votre destination';
-                              }
-                              return null;
-                            },
-                            onTap: () {
-                              Alert(
-                                context: context,
-                                type: AlertType.info,
-                                title: "Serez vous le conducteur",
-                                desc:
-                                    "Serez vous le conducteur sur ce trajet ?",
-                                buttons: [
-                                  DialogButton(
-                                    child: Text(
-                                      "Oui",
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20),
-                                    ),
-                                    onPressed: () {
-                                      setState(() {
-                                        estChauffeur = true;
-                                      });
-                                      Navigator.pop(context);
-                                    },
-                                    width: 120,
-                                  ),
-                                  DialogButton(
-                                    child: Text(
-                                      "Non",
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20),
-                                    ),
-                                    onPressed: () {
-                                      setState(() {
-                                        estChauffeur = false;
-                                      });
-                                      Navigator.pop(context);
-                                    },
-                                    width: 120,
-                                  ),
-                                ],
-                              ).show();
-                            },
-                          ),
+                            if (_destination
+                                .isNotEmpty) // Condition pour afficher la liste
+                              Expanded(
+                                child: ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: _destination.length,
+                                  itemBuilder: (context, index) {
+                                    return ListTile(
+                                      title: Text(_destination[index]),
+                                      onTap: () async {
+                                        // Mise à jour de la destination sélectionnée
+                                        setState(() {
+                                          Destination.text = _destination[index];
+                                          _destination.clear();
+                                        });
+                                      },
+                                    );
+                                  },
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                       Expanded(
@@ -308,24 +368,66 @@ class _AccueilState extends State<Accueil> {
                             onChanged: _onChangeText,
                             controller: NbrePersonnes,
                             decoration: InputDecoration(
-                              icon: Icon(Icons.people),
-                              labelText: estChauffeur? "Nombre de places disponibles" :"Nombre de voyageurs",
-                              hintText: estChauffeur? "Nombre de places disponibles" :"Nombre de voyageurs",
+                              prefixIcon: Icon(Icons.people),
+                              labelText: estChauffeur
+                                  ? "Nombre de places disponibles"
+                                  : "Nombre de voyageurs",
+                              hintText: estChauffeur
+                                  ? "Nombre de places disponibles"
+                                  : "Nombre de voyageurs",
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
+                            onTap: () async{
+                              await Alert(
+                              context: context,
+                              type: AlertType.info,
+                              title: "Serez-vous le conducteur",
+                              desc: "Serez-vous le conducteur sur ce trajet ?",
+                              buttons: [
+                                DialogButton(
+                                  child: Text(
+                                    "Oui",
+                                    style: TextStyle(color: Colors.white, fontSize: 20),
+                                  ),
+                                  onPressed: () {
+                                    // Mise à jour de l'état
+                                    setState(() {
+                                      estChauffeur = true;
+                                    });
+                                    Navigator.of(context, rootNavigator: true).pop(); // Ferme correctement la boîte de dialogue
+                                  },
+                                  width: 120,
+                                ),
+                                DialogButton(
+                                  child: Text(
+                                    "Non",
+                                    style: TextStyle(color: Colors.white, fontSize: 20),
+                                  ),
+                                  onPressed: () {
+                                    // Mise à jour de l'état
+                                    setState(() {
+                                      estChauffeur = false;
+                                    });
+                                    Navigator.of(context, rootNavigator: true).pop(); // Ferme correctement la boîte de dialogue
+                                  },
+                                  width: 120,
+                                ),
+                              ],
+                              ).show();
+                            },
                           ),
                         ),
                       ),
                       Localizations.override(
-                      context: context,
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          _selectDayAndTime(context);
-                        },
-                        child: Text(dateAffiche),
-                      ),
+                        context: context,
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            _selectDayAndTime(context);
+                          },
+                          child: Text(dateAffiche),
+                        ),
                       ),
                       Column(
                         children: [
@@ -338,7 +440,9 @@ class _AccueilState extends State<Accueil> {
                               });
                             },
                           ),
-                          estChauffeur? Text("Vous êtes le conducteur "): Text("Vous êtes passager"),
+                          estChauffeur
+                              ? Text("Vous êtes le conducteur ")
+                              : Text("Vous êtes passager"),
                         ],
                       ),
                       Expanded(
@@ -351,15 +455,18 @@ class _AccueilState extends State<Accueil> {
                               borderRadius: BorderRadius.circular(20),
                             ),
                           ),
-                          onPressed: () async{
+                          onPressed: () async {
                             // Insertion si chauffeur et recherche si voyageur
-                            if(NbrePersonnes.text.isEmpty){
+                            if (NbrePersonnes.text.isEmpty) {
                               Alert(
                                 context: context,
                                 type: AlertType.error,
-                                title: estChauffeur ?"Nombre de places disponibles": "Nombre de voyageurs",
-                                desc:
-                                estChauffeur ?"Nombre de places disponibles pour le voyage": "Nombre de voyageurs vous y compris",
+                                title: estChauffeur
+                                    ? "Nombre de places disponibles"
+                                    : "Nombre de voyageurs",
+                                desc: estChauffeur
+                                    ? "Nombre de places disponibles pour le voyage"
+                                    : "Nombre de voyageurs vous y compris",
                                 buttons: [
                                   DialogButton(
                                     child: Text(
@@ -367,15 +474,14 @@ class _AccueilState extends State<Accueil> {
                                       style: TextStyle(
                                           color: Colors.white, fontSize: 20),
                                     ),
-                                    onPressed: () =>
-                                        Navigator.pop(context),
+                                    onPressed: () => Navigator.pop(context),
                                     width: 120,
                                   ),
                                 ],
                               ).show();
                               return;
                             }
-                            if(estChauffeur){
+                            if (estChauffeur) {
                               await insertionChauffeur();
                             }
                             if (insert) {

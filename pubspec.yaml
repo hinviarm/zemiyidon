@@ -49,6 +49,8 @@ dependencies:
     sdk: flutter
   pinput: ^5.0.0
   geocoding: ^3.0.0
+  flutter_sliding_box: ^1.1.5
+  cache_storage: ^1.0.0
 
 dev_dependencies:
   flutter_test:

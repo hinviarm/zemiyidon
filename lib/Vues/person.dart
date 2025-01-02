@@ -7,6 +7,7 @@ import 'package:selectable_autolink_text/selectable_autolink_text.dart';
 import 'package:zemiyidon/Vues/profil.dart';
 import 'package:zemiyidon/Vues/transition.dart';
 import 'package:http/http.dart' as http;
+import 'dart:convert' as convert;
 
 class Person extends StatefulWidget {
   Person({super.key});
@@ -44,11 +45,41 @@ class _Person extends State<Person> {
   String id = "";
   String mDP = "";
   bool obscureText = true;
+  List<String> _MyListOID = [];
 
   @override
   void initState() {
     recSession();
     super.initState();
+  }
+
+  void recupTrajets(String mail) async{
+    var urlString = 'http://149.202.45.36:8008/consultation?Email=${mail}';
+    var url = Uri.parse(urlString);
+    var reponse = await http.get(url);
+    if (reponse.statusCode == 200) {
+      setState(() {
+        var wordShow = convert.jsonDecode(reponse.body);
+        for (var elem in wordShow) {
+          elem = elem
+              .toString()
+              .replaceAll("[", "")
+              .replaceAll("]", "")
+              .split(", ");
+          if(elem[0]=='1'){
+            //EstChauffeur, DateArrive, QuartierDepart, QuartierArrivee, DateDepart, NombrePlaces
+            _MyListOID.add("Vous êtes chauffeur sur le trajet: "+elem[2]+" à "+elem[3]+" démarrant le: "+elem[4]);
+          }
+          else{
+            _MyListOID.add("Vous êtes passager sur le trajet: "+elem[2]+" à "+elem[3]+" démarrant le: "+elem[4]);
+          }
+          debugPrint(elem[2]+" à "+elem[3]);
+        }
+      });
+    }
+
+
+
   }
 
   void recSession() async {
@@ -57,6 +88,7 @@ class _Person extends State<Person> {
     Nom.text = await SessionManager().get("nom");
     Prenom.text = await SessionManager().get("prenom");
     Telephone.text = await SessionManager().get("telephone");
+    recupTrajets(id);
   }
 
   @override
@@ -87,7 +119,7 @@ class _Person extends State<Person> {
           direction: Axis.vertical,
           children: <Widget>[
             Expanded(
-              flex: 7,
+              flex: 5,
               child: Container(
                 child: TextFormField(
                   onChanged: _onChangeTextNom,
@@ -108,7 +140,7 @@ class _Person extends State<Person> {
               ),
             ),
             Expanded(
-              flex: 7,
+              flex: 5,
               child: Container(
                 child: TextFormField(
                   onChanged: _onChangeTextPrenom,
@@ -129,7 +161,7 @@ class _Person extends State<Person> {
               ),
             ),
             Expanded(
-              flex: 7,
+              flex: 5,
               child: Container(
                 child: TextFormField(
                   onChanged: _onChangeTextMotDePasse,
@@ -162,7 +194,7 @@ class _Person extends State<Person> {
               ),
             ),
             Expanded(
-              flex: 7,
+              flex: 5,
               child: Container(
                 child: TextFormField(
                   keyboardType: TextInputType.phone,
@@ -189,7 +221,28 @@ class _Person extends State<Person> {
                 ),
               ),
             ),
-            Container(
+            Expanded(
+              flex: 12,
+              child: ListView.builder(
+                itemBuilder: (context, index) {
+                  return InkWell(
+                    child: Container(
+                      color: (index % 2 == 0)
+                          ? Colors.white.withOpacity(0.7)
+                          : Colors.cyanAccent.withOpacity(0.7),
+                      child: Text(_MyListOID[index]),
+                    ),
+                    onTap: () => {
+//TODO
+                    },
+                  );
+                },
+                itemCount: _MyListOID.length,
+              ),
+            ),
+            Expanded(
+              flex: 3,
+              child: Container(
               child: new Flex(
                 direction: Axis.horizontal,
                 children: <Widget>[
@@ -356,6 +409,9 @@ class _Person extends State<Person> {
                 ],
               ),
             ),
+
+              ),
+
           ],
         ),
       )
