@@ -191,7 +191,7 @@ class _AccueilState extends State<Accueil> {
     await longitudeLatitude();
     String? email = await SessionManager().get("email");
       var urlString = 'http://149.202.45.36:8008/rechercheChauffeur?Email=${email}&DateDepart=${dateAfficheAPI}&NombrePlaces=${int.parse(NbrePersonnes.text)}&'
-          'QuartierDepart=${Depart.text}&DepartLogitude=${locationDep.first.longitude}&DepartLatitude=${locationDep.first.latitude} QuartierDest=${Destination.text}&'
+          'QuartierDepart=${Depart.text}&DepartLogitude=${locationDep.first.longitude}&DepartLatitude=${locationDep.first.latitude}&QuartierDest=${Destination.text}&'
           'DestLogitude=${locationDest.first.longitude}&DestLatitude=${locationDest.first.latitude}';
       var url = Uri.parse(urlString);
       var response = await http.get(url);
