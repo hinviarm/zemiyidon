@@ -41,6 +41,10 @@ class _AccueilState extends State<Accueil> {
   DateTime? dateVoyage = null;
   String dateAffiche = "Selectionnez la date";
   String dateAfficheAPI = "0000-00-00 00:00:00";
+  List<Location> locationDest = [];
+  List<Location> locationDep = [];
+  List<int> identifiantTrajet =[];
+  List<String> trajetTrouve = [];
   static const String title = 'title';
 
   static const Map<String, dynamic> Fr = {title: 'Localization'};
@@ -130,9 +134,8 @@ class _AccueilState extends State<Accueil> {
     return tmp;
   }
 
-  Future<void> insertionChauffeur() async {
-    List<Location> locationDest = [];
-    List<Location> locationDep = [];
+  Future<void> longitudeLatitude() async {
+
     try {
       if(arrets.contains(Depart.text)) {
         locationDep = await locationFromAddress(Depart.text);
@@ -182,6 +185,34 @@ class _AccueilState extends State<Accueil> {
       ).show();
       return;
     }
+  }
+
+  Future<void> rechercheTrajet() async{
+    await longitudeLatitude();
+    String? email = await SessionManager().get("email");
+      var urlString = 'http://149.202.45.36:8008/rechercheChauffeur?Email=${email}&DateDepart=${dateAfficheAPI}&NombrePlaces=${int.parse(NbrePersonnes.text)}&'
+          'QuartierDepart=${Depart.text}&DepartLogitude=${locationDep.first.longitude}&DepartLatitude=${locationDep.first.latitude} QuartierDest=${Destination.text}&'
+          'DestLogitude=${locationDest.first.longitude}&DestLatitude=${locationDest.first.latitude}';
+      var url = Uri.parse(urlString);
+      var response = await http.get(url);
+      if (response.statusCode == 200) {
+        var wordShow = convert.jsonDecode(response.body);
+        if (wordShow.toString() != "[]") {
+          for (var elem in wordShow) {
+            elem = elem
+                .toString()
+                .replaceAll("[", "")
+                .replaceAll("]", "")
+                .split(", ");
+            identifiantTrajet.add(int.parse(elem[0]));
+            trajetTrouve.add("Trajet "+elem[7]+" à "+elem[8]+" Démarrant le "+elem[9]+ " "+elem[11]+" Places restants");
+          }
+        }
+      }
+  }
+
+  Future<void> insertionChauffeur() async {
+   await longitudeLatitude();
     String? email = await SessionManager().get("email");
     debugPrint("Voici votre email : ${email!}");
     var urlStringPost = 'http://149.202.45.36:8008/insertionchauffeur';
@@ -484,6 +515,9 @@ class _AccueilState extends State<Accueil> {
                             if (estChauffeur) {
                               await insertionChauffeur();
                             }
+                            else {
+                              await rechercheTrajet();
+                            }
                             if (insert) {
                               Alert(
                                 context: context,
@@ -529,6 +563,25 @@ class _AccueilState extends State<Accueil> {
                               color: Color(0xffffffff),
                             ),
                           ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: (trajetTrouve?.length ?? 0) > 0 ? 12 : 1,
+                        child: ListView.builder(
+                          itemBuilder: (context, index) {
+                            return InkWell(
+                              child: Container(
+                                color: (index % 2 == 0)
+                                    ? Colors.white.withOpacity(0.7)
+                                    : Colors.cyanAccent.withOpacity(0.7),
+                                child: Text(trajetTrouve[index]),
+                              ),
+                              onTap: () => {
+//TODO
+                              },
+                            );
+                          },
+                          itemCount: trajetTrouve.length,
                         ),
                       ),
                     ],
