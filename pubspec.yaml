@@ -51,6 +51,7 @@ dependencies:
   geocoding: ^3.0.0
   flutter_sliding_box: ^1.1.5
   cache_storage: ^1.0.0
+  another_flushbar: ^1.12.30
 
 dev_dependencies:
   flutter_test:

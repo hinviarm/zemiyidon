@@ -1,3 +1,4 @@
+import 'package:another_flushbar/flushbar.dart';
 import 'package:board_datetime_picker/board_datetime_picker.dart';
 import 'package:cache_storage/cache_storage.dart';
 import 'package:flutter/cupertino.dart';
@@ -45,7 +46,9 @@ class _AccueilState extends State<Accueil> {
   List<Location> locationDest = [];
   List<Location> locationDep = [];
   List<int> identifiantTrajet =[];
+  List<int> identifiantChauffeur =[];
   List<String> trajetTrouve = [];
+  String info = "";
   static const String title = 'title';
 
   static const Map<String, dynamic> Fr = {title: 'Localization'};
@@ -203,6 +206,7 @@ class _AccueilState extends State<Accueil> {
           for(var elem in wordShow) {
             debugPrint("happy : "+elem.toString());
               identifiantTrajet.add(elem[0]);
+              identifiantChauffeur.add(elem[1]);
               setState(() {
                 trajetTrouve.add(
                     "Trajet " + elem[7] + " à " + elem[8] + " Démarrant le " +
@@ -211,6 +215,22 @@ class _AccueilState extends State<Accueil> {
           }
         }
       }
+  }
+
+  Future<void> chercheChauffeur(int index) async{
+    var urlString = 'http://149.202.45.36:8008/infoChauffeur?Identifiant=${identifiantChauffeur[index]}';
+    var url = Uri.parse(urlString);
+    var response = await http.get(url);
+    if (response.statusCode == 200) {
+      var wordShow = convert.jsonDecode(response.body);
+      if (wordShow.toString() != "[]") {
+        for(var elem in wordShow) {
+          setState(() {
+            info = "Veuillez contacter "+elem[1]+" "+elem[0]+" au "+elem[2];
+          });
+        }
+  }
+    }
   }
 
   Future<void> insertionChauffeur() async {
@@ -579,8 +599,13 @@ class _AccueilState extends State<Accueil> {
                                     : Colors.cyanAccent.withOpacity(0.7),
                                 child: Text(trajetTrouve[index]),
                               ),
-                              onTap: () => {
-//TODO
+                              onTap: () async {
+                                await chercheChauffeur(index);
+                              Flushbar(
+                              title:  "Contactez le chauffeur!",
+                              message:  info,
+                              duration:  const Duration(seconds: 15),
+                              )..show(context);
                               },
                             );
                           },
