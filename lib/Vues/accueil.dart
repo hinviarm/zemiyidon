@@ -41,6 +41,7 @@ class _AccueilState extends State<Accueil> {
   DateTime? dateVoyage = null;
   String dateAffiche = "Selectionnez la date";
   String dateAfficheAPI = "0000-00-00 00:00:00";
+  String dateAfficheAPIPassager = "0000-00-00";
   List<Location> locationDest = [];
   List<Location> locationDep = [];
   List<int> identifiantTrajet =[];
@@ -190,22 +191,23 @@ class _AccueilState extends State<Accueil> {
   Future<void> rechercheTrajet() async{
     await longitudeLatitude();
     String? email = await SessionManager().get("email");
-      var urlString = 'http://149.202.45.36:8008/rechercheChauffeur?Email=${email}&DateDepart=${dateAfficheAPI}&NombrePlaces=${int.parse(NbrePersonnes.text)}&'
+      var urlString = 'http://149.202.45.36:8008/rechercheChauffeur?Email=${email}&DateDepart=${dateAfficheAPIPassager}&NombrePlaces=${int.parse(NbrePersonnes.text)}&'
           'QuartierDepart=${Depart.text}&DepartLogitude=${locationDep.first.longitude}&DepartLatitude=${locationDep.first.latitude}&QuartierDest=${Destination.text}&'
           'DestLogitude=${locationDest.first.longitude}&DestLatitude=${locationDest.first.latitude}';
       var url = Uri.parse(urlString);
       var response = await http.get(url);
       if (response.statusCode == 200) {
+        debugPrint("Voici "+response.body.toString());
         var wordShow = convert.jsonDecode(response.body);
         if (wordShow.toString() != "[]") {
-          for (var elem in wordShow) {
-            elem = elem
-                .toString()
-                .replaceAll("[", "")
-                .replaceAll("]", "")
-                .split(", ");
-            identifiantTrajet.add(int.parse(elem[0]));
-            trajetTrouve.add("Trajet "+elem[7]+" à "+elem[8]+" Démarrant le "+elem[9]+ " "+elem[11]+" Places restants");
+          for(var elem in wordShow) {
+            debugPrint("happy : "+elem.toString());
+              identifiantTrajet.add(elem[0]);
+              setState(() {
+                trajetTrouve.add(
+                    "Trajet " + elem[7] + " à " + elem[8] + " Démarrant le " +
+                        elem[9].toString().replaceAll("T", " à ") + " " + elem[11].toString() + " Places restants");
+              });
           }
         }
       }
@@ -275,6 +277,7 @@ class _AccueilState extends State<Accueil> {
       setState(() {
         dateAffiche = DateFormat('yyyy-MM-dd – kk:mm').format(dateVoyage!);
         dateAfficheAPI = DateFormat('yyyy-MM-dd kk:mm:ss').format(dateVoyage!);
+        dateAfficheAPIPassager = DateFormat('yyyy-MM-dd').format(dateVoyage!);
       });
     }
   }
@@ -514,47 +517,47 @@ class _AccueilState extends State<Accueil> {
                             }
                             if (estChauffeur) {
                               await insertionChauffeur();
+                              if (insert) {
+                                Alert(
+                                  context: context,
+                                  type: AlertType.success,
+                                  title: "Merci !",
+                                  desc: "La ligne a été ajoutée avec succès",
+                                  buttons: [
+                                    DialogButton(
+                                      child: Text(
+                                        "Fermer",
+                                        style: TextStyle(
+                                            color: Colors.white, fontSize: 20),
+                                      ),
+                                      onPressed: () => Navigator.pop(context),
+                                      width: 120,
+                                    )
+                                  ],
+                                ).show();
+                                exec = true;
+                              } else {
+                                Alert(
+                                  context: context,
+                                  type: AlertType.error,
+                                  title: "Désolé !",
+                                  desc: "La ligne n'a pas pu être ajoutée",
+                                  buttons: [
+                                    DialogButton(
+                                      child: Text(
+                                        "Fermer",
+                                        style: TextStyle(
+                                            color: Colors.white, fontSize: 20),
+                                      ),
+                                      onPressed: () => Navigator.pop(context),
+                                      width: 120,
+                                    )
+                                  ],
+                                ).show();
+                              }
                             }
                             else {
                               await rechercheTrajet();
-                            }
-                            if (insert) {
-                              Alert(
-                                context: context,
-                                type: AlertType.success,
-                                title: "Merci !",
-                                desc: "La ligne a été ajoutée avec succès",
-                                buttons: [
-                                  DialogButton(
-                                    child: Text(
-                                      "Fermer",
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20),
-                                    ),
-                                    onPressed: () => Navigator.pop(context),
-                                    width: 120,
-                                  )
-                                ],
-                              ).show();
-                              exec = true;
-                            } else {
-                              Alert(
-                                context: context,
-                                type: AlertType.error,
-                                title: "Désolé !",
-                                desc: "La ligne n'a pas pu être ajoutée",
-                                buttons: [
-                                  DialogButton(
-                                    child: Text(
-                                      "Fermer",
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20),
-                                    ),
-                                    onPressed: () => Navigator.pop(context),
-                                    width: 120,
-                                  )
-                                ],
-                              ).show();
                             }
                           },
                           child: Text(
