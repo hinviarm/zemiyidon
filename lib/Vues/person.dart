@@ -298,7 +298,7 @@ class _Person extends State<Person> {
                           await Flushbar(
                             title: "Blocage en échec",
                             message: "Nous n'avons pas pu bloquer votre trajet :" +
-                                _MyListOID[index] + " contactez ",
+                                _MyListOID[index] + " contactez andel.arm06@gmail.com",
                             duration: const Duration(seconds: 5),
                           )
                             ..show(context);
