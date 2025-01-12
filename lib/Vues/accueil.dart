@@ -311,12 +311,13 @@ class _AccueilState extends State<Accueil> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: new Stack(
         children: <Widget>[
           new Container(
             decoration: new BoxDecoration(
               image: new DecorationImage(
-                image: new AssetImage("images/fond.jpg"),
+                image: new AssetImage("images/voiture.jpg"),
                 fit: BoxFit.cover,
               ),
             ),
@@ -326,6 +327,7 @@ class _AccueilState extends State<Accueil> {
             child: new ListView(
               children: [
                 Container(
+                  padding: EdgeInsets.only(top: 40),
                   height: 400,
                   child: Flex(
                     direction: Axis.vertical,
@@ -594,6 +596,7 @@ class _AccueilState extends State<Accueil> {
                           itemBuilder: (context, index) {
                             return InkWell(
                               child: Container(
+                                margin: const EdgeInsets.only(left: 20, right: 20),
                                 color: (index % 2 == 0)
                                     ? Colors.white.withOpacity(0.7)
                                     : Colors.cyanAccent.withOpacity(0.7),

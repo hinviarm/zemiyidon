@@ -79,6 +79,7 @@ flutter:
   assets:
     - images/homeli.png
     - images/fond.jpg
+    - images/voiture.jpg
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

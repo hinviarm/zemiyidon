@@ -1,3 +1,4 @@
+import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_session_manager/flutter_session_manager.dart';
 import 'package:pinput/pinput.dart';
@@ -134,6 +135,13 @@ class _PinputCodeState extends State<PinputCode> {
                       validator: (value) {
                         if (n > 0) {
                           n = n - 1;
+                          Flushbar(
+                          title: "Mauvais code",
+                          message: "Mauvais code. Il vous reste " +
+                              n.toString()+" essai(s)",
+                          duration: const Duration(seconds: 5),
+                          )
+                            ..show(context);
                           return value == widget.code
                               ? null
                               : 'Mauvais code \nIl vous reste ' +

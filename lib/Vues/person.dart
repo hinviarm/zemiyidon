@@ -114,6 +114,7 @@ class _Person extends State<Person> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        resizeToAvoidBottomInset: false,
         body: new Stack(children: <Widget>[
       new Container(
         decoration: new BoxDecoration(
@@ -124,6 +125,7 @@ class _Person extends State<Person> {
         ),
       ),
       new Container(
+        padding: EdgeInsets.only(top: 40),
         color: Colors.white.withOpacity(0.7),
         child: Flex(
           direction: Axis.vertical,
@@ -237,6 +239,7 @@ class _Person extends State<Person> {
                 itemBuilder: (context, index) {
                   return InkWell(
                     child: Container(
+                      margin: const EdgeInsets.only(left: 20, right: 20),
                       color: (index % 2 == 0)
                           ? Colors.white.withOpacity(0.7)
                           : Colors.cyanAccent.withOpacity(0.7),
@@ -248,7 +251,7 @@ class _Person extends State<Person> {
                           context: context,
                           type: AlertType.warning,
                           title: "Bloquer ce trajet",
-                          desc: "Voulez vous archiver le trajet :" +
+                          desc: "Voulez vous empêcher d'autres reservation sur ce trajet ?" +
                               _MyListOID[index] + " ?",
                           buttons: [
                             DialogButton(
@@ -322,7 +325,7 @@ class _Person extends State<Person> {
               ),
             ),
             Expanded(
-              flex: 3,
+              flex: 5,
               child: Container(
                 child: new Flex(
                   direction: Axis.horizontal,

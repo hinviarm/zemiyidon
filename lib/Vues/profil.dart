@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:another_flushbar/flushbar.dart';
 import 'package:crypt/crypt.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_login/flutter_login.dart';
@@ -200,6 +201,13 @@ class _MonProfil extends State<Profil> {
       return "Votre adresse mail n'est pas valide" as Future<String>;
     }
     else {
+      /*await Flushbar(
+        title: "Code Envoyé",
+        message: "Un code de validation de 4 chiffres vous a été envoyé par mail. Veuillez le consulter et le saisir dans la page suivante",
+        duration: const Duration(seconds: 5),
+      )
+        ..show(context);
+       */
       Navigator.of(context).pushReplacement(
         FadePageRoute(
           //builder: (context) => const Onglet(),
@@ -247,7 +255,7 @@ class _MonProfil extends State<Profil> {
                   if (value != null &&
                       value.length < 7 &&
                       !phoneRegExp.hasMatch(value)) {
-                    return "This isn't a valid phone number";
+                    return "Ce numéro de téléphone n'est pas valide";
                   }
                   return null;
                 },
