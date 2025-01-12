@@ -302,6 +302,7 @@ class _AccueilState extends State<Accueil> {
     }
   }
 
+
   @override
   void initState() {
     _Detection();
@@ -311,7 +312,6 @@ class _AccueilState extends State<Accueil> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false,
       body: new Stack(
         children: <Widget>[
           new Container(
@@ -329,12 +329,12 @@ class _AccueilState extends State<Accueil> {
                 Container(
                   padding: EdgeInsets.only(top: 40),
                   height: 400,
-                  child: Flex(
-                    direction: Axis.vertical,
+                  child: Column(
+                    //direction: Axis.vertical,
                     children: <Widget>[
-                      Expanded(
-                        flex: 7,
-                        child: Column(
+                      //Expanded(
+                        //flex: 7,
+                        Column(
                           children: [
                             Container(
                               height: 40,
@@ -351,30 +351,14 @@ class _AccueilState extends State<Accueil> {
                                 ),
                               ),
                             ),
-                            if (_depart
-                                .isNotEmpty) // Condition pour afficher la liste
-                              Expanded(
-                                child: ListView.builder(
-                                  shrinkWrap: true,
-                                  itemCount: _depart.length,
-                                  itemBuilder: (context, index) {
-                                    return ListTile(
-                                      title: Text(_depart[index]),
-                                      onTap: () {
-                                        Depart.text = _depart[index];
-                                        _depart.clear();
-                                        setState(() {});
-                                      },
-                                    );
-                                  },
-                                ),
-                              ),
+
                           ],
                         ),
-                      ),
-                      Expanded(
-                        flex: 7,
-                        child: Column(
+                      //),
+                      //Expanded(
+                        //flex: 7,
+                      SizedBox(height: 20),
+                        Column(
                           children: [
                             Container(
                               height: 40,
@@ -391,32 +375,14 @@ class _AccueilState extends State<Accueil> {
                                 ),
                               ),
                             ),
-                            if (_destination
-                                .isNotEmpty) // Condition pour afficher la liste
-                              Expanded(
-                                child: ListView.builder(
-                                  shrinkWrap: true,
-                                  itemCount: _destination.length,
-                                  itemBuilder: (context, index) {
-                                    return ListTile(
-                                      title: Text(_destination[index]),
-                                      onTap: () async {
-                                        // Mise à jour de la destination sélectionnée
-                                        setState(() {
-                                          Destination.text = _destination[index];
-                                          _destination.clear();
-                                        });
-                                      },
-                                    );
-                                  },
-                                ),
-                              ),
+
                           ],
                         ),
-                      ),
-                      Expanded(
-                        flex: 7,
-                        child: Container(
+                      //),
+                      //Expanded(
+                        //flex: 7,
+                      SizedBox(height: 20),
+                        Container(
                           height: 40,
                           child: TextFormField(
                             keyboardType: TextInputType.number,
@@ -475,7 +441,7 @@ class _AccueilState extends State<Accueil> {
                             },
                           ),
                         ),
-                      ),
+                      //),
                       Localizations.override(
                         context: context,
                         child: ElevatedButton(
@@ -485,6 +451,7 @@ class _AccueilState extends State<Accueil> {
                           child: Text(dateAffiche),
                         ),
                       ),
+                      SizedBox(height: 20),
                       Column(
                         children: [
                           CupertinoSwitch(
@@ -501,11 +468,12 @@ class _AccueilState extends State<Accueil> {
                               : Text("Vous êtes passager"),
                         ],
                       ),
-                      Expanded(
-                        flex: 4,
-                        child: TextButton(
+                      //Expanded(
+                        //flex: 4,
+                      SizedBox(height: 20),
+                        TextButton(
                           style: TextButton.styleFrom(
-                            fixedSize: const Size(200, 100),
+                            fixedSize: const Size(100, 50),
                             backgroundColor: Color(0xffF18265),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
@@ -589,7 +557,7 @@ class _AccueilState extends State<Accueil> {
                             ),
                           ),
                         ),
-                      ),
+                      //),
                       Expanded(
                         flex: (trajetTrouve?.length ?? 0) > 0 ? 12 : 1,
                         child: ListView.builder(
@@ -621,7 +589,53 @@ class _AccueilState extends State<Accueil> {
               ],
             ),
           ),
+          if (_depart
+              .isNotEmpty) // Condition pour afficher la liste
+            Expanded(
+              child: _depart.isNotEmpty ?ListView.builder(
+                shrinkWrap: true,
+                itemCount: _depart.length,
+                itemBuilder: (context, index) {
+                  return Card( margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                    child:ListTile(
+                      title: Text(_depart[index]),
+                      onTap: () {
+                        Depart.text = _depart[index];
+                        _depart.clear();
+                        setState(() {});
+                      },
+                    ),
+                  );
+                },
+              ): Center(child: Text("Aucune ville de départ disponible."),),
+            ),
+
+          if (_destination
+              .isNotEmpty) // Condition pour afficher la liste
+            Expanded(
+              child: _destination.isNotEmpty ? ListView.builder(
+                shrinkWrap: true,
+                itemCount: _destination.length,
+                itemBuilder: (context, index) {
+                  return Card( margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                    child: ListTile(
+                      title: Text(_destination[index]),
+                      onTap: () async {
+                        // Mise à jour de la destination sélectionnée
+                        setState(() {
+                          Destination.text = _destination[index];
+                          _destination.clear();
+                        });
+                      },
+                    ),
+                  );
+                },
+              ): Center(child: Text("Aucune destination disponible."),),
+            ),
         ],
+
+
+
       ),
     );
   }

@@ -24,7 +24,7 @@ class Profil extends StatefulWidget {
 }
 
 class _MonProfil extends State<Profil> {
-  Duration get loginTime => Duration(milliseconds: 250);
+  Duration get loginTime => Duration(milliseconds: 20);
   var sessionManager = SessionManager();
   bool connect = false;
   String? id = '';
@@ -143,7 +143,7 @@ class _MonProfil extends State<Profil> {
     Telephone = data.additionalSignupData!["Telephone"]!;
     await insertion(data.name!, c1.toString(), Nom, Prenom, Telephone);
     return Future.delayed(loginTime).then((_) {
-      if (!mounted) return null;
+      if (!mounted) return "Impossible de vous enregistrer";
       return null;
     });
   }
@@ -185,6 +185,23 @@ class _MonProfil extends State<Profil> {
       var wordShow = convert.jsonDecode(reponse.body);
       debugPrint("wordShow : " + wordShow.toString());
       if (wordShow.toString() == "true" || wordShow.toString() == "True") {
+        await Alert(
+          context: context,
+          type: AlertType.info,
+          title: "Code envoyé par mail !",
+          desc: "Un code de validation de 4 chiffres vous a été envoyé par mail. Veuillez le consulter et le saisir dans la page suivante",
+          buttons: [
+            DialogButton(
+              child: Text(
+                "Fermer",
+                style: TextStyle(
+                    color: Colors.white, fontSize: 20),
+              ),
+              onPressed: () => Navigator.pop(context),
+              width: 120,
+            )
+          ],
+        ).show();
         return true;
       }
     }

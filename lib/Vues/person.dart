@@ -334,7 +334,7 @@ class _Person extends State<Person> {
                       flex: 3,
                       child: TextButton(
                         style: TextButton.styleFrom(
-                          fixedSize: const Size(200, 100),
+                          fixedSize: const Size(100, 50),
                           backgroundColor: Color(0xffF18265),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
@@ -360,7 +360,7 @@ class _Person extends State<Person> {
                       flex: 3,
                       child: TextButton(
                         style: TextButton.styleFrom(
-                          fixedSize: const Size(200, 100),
+                          fixedSize: const Size(100, 50),
                           backgroundColor: Color(0xffF18265),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
