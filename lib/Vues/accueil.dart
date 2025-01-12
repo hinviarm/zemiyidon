@@ -21,7 +21,6 @@ class Accueil extends StatefulWidget {
 }
 
 class _AccueilState extends State<Accueil> {
-
   bool? _Rep;
   bool exec = false;
   bool estChauffeur = false;
@@ -45,8 +44,8 @@ class _AccueilState extends State<Accueil> {
   String dateAfficheAPIPassager = "0000-00-00";
   List<Location> locationDest = [];
   List<Location> locationDep = [];
-  List<int> identifiantTrajet =[];
-  List<int> identifiantChauffeur =[];
+  List<int> identifiantTrajet = [];
+  List<int> identifiantChauffeur = [];
   List<String> trajetTrouve = [];
   String info = "";
   static const String title = 'title';
@@ -113,7 +112,7 @@ class _AccueilState extends State<Accueil> {
 
   _onSubmittedText(value) => debugPrint("_onSubmittedText: $value");
 
-  void _onSearchChanged(String query) async{
+  void _onSearchChanged(String query) async {
     await _Detection();
     setState(() {
       _depart = arrets
@@ -122,7 +121,7 @@ class _AccueilState extends State<Accueil> {
     });
   }
 
-  void _onDestinationChanged(String query) async{
+  void _onDestinationChanged(String query) async {
     await _Detection();
     setState(() {
       _destination = arrets
@@ -139,18 +138,19 @@ class _AccueilState extends State<Accueil> {
   }
 
   Future<void> longitudeLatitude() async {
-
     try {
-      if(arrets.contains(Depart.text)) {
+      if (arrets.contains(Depart.text)) {
         locationDep = await locationFromAddress(Depart.text);
+      } else {
+        throw new FormatException();
       }
-      else {throw new FormatException();}
     } catch (e) {
       Alert(
         context: context,
         type: AlertType.error,
         title: "Adresse non reconnu",
-        desc: "L'adresse de départ n'est pas correcte. Saissisez un nom de ville Béninoise",
+        desc:
+            "L'adresse de départ n'est pas correcte. Saissisez un nom de ville Béninoise",
         buttons: [
           DialogButton(
             child: Text(
@@ -166,16 +166,18 @@ class _AccueilState extends State<Accueil> {
     }
 
     try {
-      if(arrets.contains(Destination.text)) {
+      if (arrets.contains(Destination.text)) {
         locationDest = await locationFromAddress(Destination.text);
+      } else {
+        throw new FormatException();
       }
-      else{ throw new FormatException();}
     } catch (e) {
       Alert(
         context: context,
         type: AlertType.error,
         title: "Adresse non reconnu",
-        desc: "L'adresse de destination n'est pas correcte. Saissisez un nom de ville Béninoise",
+        desc:
+            "L'adresse de destination n'est pas correcte. Saissisez un nom de ville Béninoise",
         buttons: [
           DialogButton(
             child: Text(
@@ -191,50 +193,63 @@ class _AccueilState extends State<Accueil> {
     }
   }
 
-  Future<void> rechercheTrajet() async{
+  Future<void> rechercheTrajet() async {
     await longitudeLatitude();
     String? email = await SessionManager().get("email");
-      var urlString = 'http://149.202.45.36:8008/rechercheChauffeur?Email=${email}&DateDepart=${dateAfficheAPIPassager}&NombrePlaces=${int.parse(NbrePersonnes.text)}&'
-          'QuartierDepart=${Depart.text}&DepartLogitude=${locationDep.first.longitude}&DepartLatitude=${locationDep.first.latitude}&QuartierDest=${Destination.text}&'
-          'DestLogitude=${locationDest.first.longitude}&DestLatitude=${locationDest.first.latitude}';
-      var url = Uri.parse(urlString);
-      var response = await http.get(url);
-      if (response.statusCode == 200) {
-        debugPrint("Voici "+response.body.toString());
-        var wordShow = convert.jsonDecode(response.body);
-        if (wordShow.toString() != "[]") {
-          for(var elem in wordShow) {
-            debugPrint("happy : "+elem.toString());
-              identifiantTrajet.add(elem[0]);
-              identifiantChauffeur.add(elem[1]);
-              setState(() {
-                trajetTrouve.add(
-                    "Trajet " + elem[7] + " à " + elem[8] + " Démarrant le " +
-                        elem[9].toString().replaceAll("T", " à ") + " " + elem[11].toString() + " Places restants");
-              });
-          }
+    var urlString =
+        'http://149.202.45.36:8008/rechercheChauffeur?Email=${email}&DateDepart=${dateAfficheAPIPassager}&NombrePlaces=${int.parse(NbrePersonnes.text)}&'
+        'QuartierDepart=${Depart.text}&DepartLogitude=${locationDep.first.longitude}&DepartLatitude=${locationDep.first.latitude}&QuartierDest=${Destination.text}&'
+        'DestLogitude=${locationDest.first.longitude}&DestLatitude=${locationDest.first.latitude}';
+    var url = Uri.parse(urlString);
+    var response = await http.get(url);
+    if (response.statusCode == 200) {
+      debugPrint("Voici " + response.body.toString());
+      var wordShow = convert.jsonDecode(response.body);
+      if (wordShow.toString() != "[]") {
+        for (var elem in wordShow) {
+          debugPrint("happy : " + elem.toString());
+          identifiantTrajet.add(elem[0]);
+          identifiantChauffeur.add(elem[1]);
+          setState(() {
+            trajetTrouve.add("Trajet " +
+                elem[7] +
+                " à " +
+                elem[8] +
+                " Démarrant le " +
+                elem[9].toString().replaceAll("T", " à ") +
+                " " +
+                elem[11].toString() +
+                " Places restants");
+          });
         }
       }
+    }
   }
 
-  Future<void> chercheChauffeur(int index) async{
-    var urlString = 'http://149.202.45.36:8008/infoChauffeur?Identifiant=${identifiantChauffeur[index]}';
+  Future<void> chercheChauffeur(int index) async {
+    var urlString =
+        'http://149.202.45.36:8008/infoChauffeur?Identifiant=${identifiantChauffeur[index]}';
     var url = Uri.parse(urlString);
     var response = await http.get(url);
     if (response.statusCode == 200) {
       var wordShow = convert.jsonDecode(response.body);
       if (wordShow.toString() != "[]") {
-        for(var elem in wordShow) {
+        for (var elem in wordShow) {
           setState(() {
-            info = "Veuillez contacter "+elem[1]+" "+elem[0]+" au "+elem[2];
+            info = "Veuillez contacter " +
+                elem[1] +
+                " " +
+                elem[0] +
+                " au " +
+                elem[2];
           });
         }
-  }
+      }
     }
   }
 
   Future<void> insertionChauffeur() async {
-   await longitudeLatitude();
+    await longitudeLatitude();
     String? email = await SessionManager().get("email");
     debugPrint("Voici votre email : ${email!}");
     var urlStringPost = 'http://149.202.45.36:8008/insertionchauffeur';
@@ -302,7 +317,6 @@ class _AccueilState extends State<Accueil> {
     }
   }
 
-
   @override
   void initState() {
     _Detection();
@@ -322,138 +336,119 @@ class _AccueilState extends State<Accueil> {
               ),
             ),
           ),
-          new Container(
+          Container(
             color: Colors.white.withOpacity(0.7),
-            child: new ListView(
+            child: Column(
               children: [
-                Container(
-                  padding: EdgeInsets.only(top: 40),
-                  height: 400,
-                  child: Column(
-                    //direction: Axis.vertical,
-                    children: <Widget>[
-                      //Expanded(
-                        //flex: 7,
-                        Column(
-                          children: [
-                            Container(
-                              height: 40,
-                              child: TextFormField(
-                                controller: Depart,
-                                onChanged: _onSearchChanged,
-                                decoration: InputDecoration(
-                                  labelText: 'Votre point de Départ ',
-                                  hintText: 'Votre point de Départ',
-                                  prefixIcon: Icon(Icons.directions_car_filled),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                          ],
-                        ),
-                      //),
-                      //Expanded(
-                        //flex: 7,
-                      SizedBox(height: 20),
-                        Column(
-                          children: [
-                            Container(
-                              height: 40,
-                              child: TextFormField(
-                                controller: Destination,
-                                onChanged: _onDestinationChanged,
-                                decoration: InputDecoration(
-                                  labelText: 'Votre destination',
-                                  hintText: 'Votre destination',
-                                  prefixIcon: Icon(Icons.flag),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                          ],
-                        ),
-                      //),
-                      //Expanded(
-                        //flex: 7,
-                      SizedBox(height: 20),
-                        Container(
-                          height: 40,
-                          child: TextFormField(
-                            keyboardType: TextInputType.number,
-                            autocorrect: false,
-                            onChanged: _onChangeText,
-                            controller: NbrePersonnes,
-                            decoration: InputDecoration(
-                              prefixIcon: Icon(Icons.people),
-                              labelText: estChauffeur
-                                  ? "Nombre de places disponibles"
-                                  : "Nombre de voyageurs",
-                              hintText: estChauffeur
-                                  ? "Nombre de places disponibles"
-                                  : "Nombre de voyageurs",
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                            onTap: () async{
-                              await Alert(
-                              context: context,
-                              type: AlertType.info,
-                              title: "Serez-vous le conducteur",
-                              desc: "Serez-vous le conducteur sur ce trajet ?",
-                              buttons: [
-                                DialogButton(
-                                  child: Text(
-                                    "Oui",
-                                    style: TextStyle(color: Colors.white, fontSize: 20),
-                                  ),
-                                  onPressed: () {
-                                    // Mise à jour de l'état
-                                    setState(() {
-                                      estChauffeur = true;
-                                    });
-                                    Navigator.of(context, rootNavigator: true).pop(); // Ferme correctement la boîte de dialogue
-                                  },
-                                  width: 120,
-                                ),
-                                DialogButton(
-                                  child: Text(
-                                    "Non",
-                                    style: TextStyle(color: Colors.white, fontSize: 20),
-                                  ),
-                                  onPressed: () {
-                                    // Mise à jour de l'état
-                                    setState(() {
-                                      estChauffeur = false;
-                                    });
-                                    Navigator.of(context, rootNavigator: true).pop(); // Ferme correctement la boîte de dialogue
-                                  },
-                                  width: 120,
-                                ),
-                              ],
-                              ).show();
-                            },
-                          ),
-                        ),
-                      //),
-                      Localizations.override(
-                        context: context,
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            _selectDayAndTime(context);
-                          },
-                          child: Text(dateAffiche),
-                        ),
-                      ),
-                      SizedBox(height: 20),
-                      Column(
+                Expanded(
+                  flex: 3,
+                  child: Padding(
+                    padding: EdgeInsets.only(top: 40),
+                    child: SingleChildScrollView(
+                      child: Column(
                         children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: TextFormField(
+                              controller: Depart,
+                              onChanged: _onSearchChanged,
+                              decoration: InputDecoration(
+                                labelText: 'Votre point de Départ',
+                                hintText: 'Votre point de Départ',
+                                prefixIcon: Icon(Icons.directions_car_filled),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: TextFormField(
+                              controller: Destination,
+                              onChanged: _onDestinationChanged,
+                              decoration: InputDecoration(
+                                labelText: 'Votre destination',
+                                hintText: 'Votre destination',
+                                prefixIcon: Icon(Icons.flag),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: TextFormField(
+                              keyboardType: TextInputType.number,
+                              autocorrect: false,
+                              onChanged: _onChangeText,
+                              controller: NbrePersonnes,
+                              decoration: InputDecoration(
+                                prefixIcon: Icon(Icons.people),
+                                labelText: estChauffeur
+                                    ? "Nombre de places disponibles"
+                                    : "Nombre de voyageurs",
+                                hintText: estChauffeur
+                                    ? "Nombre de places disponibles"
+                                    : "Nombre de voyageurs",
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              onTap: () async {
+                                await Alert(
+                                  context: context,
+                                  type: AlertType.info,
+                                  title: "Serez-vous le conducteur",
+                                  desc:
+                                      "Serez-vous le conducteur sur ce trajet ?",
+                                  buttons: [
+                                    DialogButton(
+                                      child: Text(
+                                        "Oui",
+                                        style: TextStyle(
+                                            color: Colors.white, fontSize: 20),
+                                      ),
+                                      onPressed: () {
+                                        // Mise à jour de l'état
+                                        setState(() {
+                                          estChauffeur = true;
+                                        });
+                                        Navigator.of(context,
+                                                rootNavigator: true)
+                                            .pop(); // Ferme correctement la boîte de dialogue
+                                      },
+                                      width: 120,
+                                    ),
+                                    DialogButton(
+                                      child: Text(
+                                        "Non",
+                                        style: TextStyle(
+                                            color: Colors.white, fontSize: 20),
+                                      ),
+                                      onPressed: () {
+                                        // Mise à jour de l'état
+                                        setState(() {
+                                          estChauffeur = false;
+                                        });
+                                        Navigator.of(context,
+                                                rootNavigator: true)
+                                            .pop(); // Ferme correctement la boîte de dialogue
+                                      },
+                                      width: 120,
+                                    ),
+                                  ],
+                                ).show();
+                              },
+                            ),
+                          ),
+                          ElevatedButton(
+                            onPressed: () async {
+                              _selectDayAndTime(context);
+                            },
+                            child: Text(dateAffiche),
+                          ),
                           CupertinoSwitch(
                             value: estChauffeur,
                             trackColor: Colors.blue,
@@ -463,161 +458,178 @@ class _AccueilState extends State<Accueil> {
                               });
                             },
                           ),
-                          estChauffeur
-                              ? Text("Vous êtes le conducteur ")
-                              : Text("Vous êtes passager"),
+                          Text(
+                            estChauffeur
+                                ? "Vous êtes le conducteur "
+                                : "Vous êtes passager",
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 20),
+                            child: TextButton(
+                              style: TextButton.styleFrom(
+                                fixedSize: const Size(200, 50),
+                                backgroundColor: Color(0xffF18265),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                              ),
+                              onPressed: () async {
+                                // Insertion si chauffeur et recherche si voyageur
+                                if (NbrePersonnes.text.isEmpty) {
+                                  Alert(
+                                    context: context,
+                                    type: AlertType.error,
+                                    title: estChauffeur
+                                        ? "Nombre de places disponibles"
+                                        : "Nombre de voyageurs",
+                                    desc: estChauffeur
+                                        ? "Nombre de places disponibles pour le voyage"
+                                        : "Nombre de voyageurs vous y compris",
+                                    buttons: [
+                                      DialogButton(
+                                        child: Text(
+                                          "Fermer",
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 20),
+                                        ),
+                                        onPressed: () => Navigator.pop(context),
+                                        width: 120,
+                                      ),
+                                    ],
+                                  ).show();
+                                  return;
+                                }
+                                if (estChauffeur) {
+                                  await insertionChauffeur();
+                                  if (insert) {
+                                    Alert(
+                                      context: context,
+                                      type: AlertType.success,
+                                      title: "Merci !",
+                                      desc:
+                                          "La ligne a été ajoutée avec succès",
+                                      buttons: [
+                                        DialogButton(
+                                          child: Text(
+                                            "Fermer",
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 20),
+                                          ),
+                                          onPressed: () =>
+                                              Navigator.pop(context),
+                                          width: 120,
+                                        )
+                                      ],
+                                    ).show();
+                                    exec = true;
+                                  } else {
+                                    Alert(
+                                      context: context,
+                                      type: AlertType.error,
+                                      title: "Désolé !",
+                                      desc: "La ligne n'a pas pu être ajoutée",
+                                      buttons: [
+                                        DialogButton(
+                                          child: Text(
+                                            "Fermer",
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 20),
+                                          ),
+                                          onPressed: () =>
+                                              Navigator.pop(context),
+                                          width: 120,
+                                        )
+                                      ],
+                                    ).show();
+                                  }
+                                } else {
+                                  await rechercheTrajet();
+                                }
+                              },
+                              child: Text(
+                                "Valider",
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
-                      //Expanded(
-                        //flex: 4,
-                      SizedBox(height: 20),
-                        TextButton(
-                          style: TextButton.styleFrom(
-                            fixedSize: const Size(100, 50),
-                            backgroundColor: Color(0xffF18265),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          ),
-                          onPressed: () async {
-                            // Insertion si chauffeur et recherche si voyageur
-                            if (NbrePersonnes.text.isEmpty) {
-                              Alert(
-                                context: context,
-                                type: AlertType.error,
-                                title: estChauffeur
-                                    ? "Nombre de places disponibles"
-                                    : "Nombre de voyageurs",
-                                desc: estChauffeur
-                                    ? "Nombre de places disponibles pour le voyage"
-                                    : "Nombre de voyageurs vous y compris",
-                                buttons: [
-                                  DialogButton(
-                                    child: Text(
-                                      "Fermer",
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20),
-                                    ),
-                                    onPressed: () => Navigator.pop(context),
-                                    width: 120,
-                                  ),
-                                ],
-                              ).show();
-                              return;
-                            }
-                            if (estChauffeur) {
-                              await insertionChauffeur();
-                              if (insert) {
-                                Alert(
-                                  context: context,
-                                  type: AlertType.success,
-                                  title: "Merci !",
-                                  desc: "La ligne a été ajoutée avec succès",
-                                  buttons: [
-                                    DialogButton(
-                                      child: Text(
-                                        "Fermer",
-                                        style: TextStyle(
-                                            color: Colors.white, fontSize: 20),
-                                      ),
-                                      onPressed: () => Navigator.pop(context),
-                                      width: 120,
-                                    )
-                                  ],
-                                ).show();
-                                exec = true;
-                              } else {
-                                Alert(
-                                  context: context,
-                                  type: AlertType.error,
-                                  title: "Désolé !",
-                                  desc: "La ligne n'a pas pu être ajoutée",
-                                  buttons: [
-                                    DialogButton(
-                                      child: Text(
-                                        "Fermer",
-                                        style: TextStyle(
-                                            color: Colors.white, fontSize: 20),
-                                      ),
-                                      onPressed: () => Navigator.pop(context),
-                                      width: 120,
-                                    )
-                                  ],
-                                ).show();
-                              }
-                            }
-                            else {
-                              await rechercheTrajet();
-                            }
-                          },
-                          child: Text(
-                            "Valider",
-                            style: TextStyle(
-                              color: Color(0xffffffff),
-                            ),
-                          ),
-                        ),
-                      //),
-                      Expanded(
-                        flex: (trajetTrouve?.length ?? 0) > 0 ? 12 : 1,
-                        child: ListView.builder(
-                          itemBuilder: (context, index) {
-                            return InkWell(
-                              child: Container(
-                                margin: const EdgeInsets.only(left: 20, right: 20),
-                                color: (index % 2 == 0)
-                                    ? Colors.white.withOpacity(0.7)
-                                    : Colors.cyanAccent.withOpacity(0.7),
-                                child: Text(trajetTrouve[index]),
-                              ),
-                              onTap: () async {
-                                await chercheChauffeur(index);
-                              Flushbar(
-                              title:  "Contactez le chauffeur!",
-                              message:  info,
-                              duration:  const Duration(seconds: 15),
-                              )..show(context);
-                              },
-                            );
-                          },
-                          itemCount: trajetTrouve.length,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
+                // Liste des trajets trouvés
+                if ((trajetTrouve?.length ?? 0) > 0)
+                  Expanded(
+                    flex: 4,
+                    child: ListView.builder(
+                      itemCount: trajetTrouve.length,
+                      itemBuilder: (context, index) {
+                        return InkWell(
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 10),
+                            color: (index % 2 == 0)
+                                ? Colors.white.withOpacity(0.7)
+                                : Colors.cyanAccent.withOpacity(0.7),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Text(trajetTrouve[index]),
+                            ),
+                          ),
+                          onTap: () async {
+                            await chercheChauffeur(index);
+                            Flushbar(
+                              title: "Contactez le chauffeur!",
+                              message: info,
+                              duration: const Duration(seconds: 15),
+                            )..show(context);
+                          },
+                        );
+                      },
+                    ),
+                  ),
               ],
             ),
           ),
-          if (_depart
-              .isNotEmpty) // Condition pour afficher la liste
-            Expanded(
-              child: _depart.isNotEmpty ?ListView.builder(
-                shrinkWrap: true,
+          if (_depart.isNotEmpty)
+            Positioned(
+              top: 50, // Adjust the top position as required
+              bottom: 0, // Allow the list to fill the remaining space
+              left: 0,
+              right: 0,
+              child: ListView.builder(
                 itemCount: _depart.length,
                 itemBuilder: (context, index) {
-                  return Card( margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                    child:ListTile(
+                  return Card(
+                    margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                    child: ListTile(
                       title: Text(_depart[index]),
                       onTap: () {
-                        Depart.text = _depart[index];
-                        _depart.clear();
-                        setState(() {});
+                        setState(() {
+                          Depart.text = _depart[index];
+                          _depart.clear();
+                        });
                       },
                     ),
                   );
                 },
-              ): Center(child: Text("Aucune ville de départ disponible."),),
+              ),
             ),
-
-          if (_destination
-              .isNotEmpty) // Condition pour afficher la liste
-            Expanded(
-              child: _destination.isNotEmpty ? ListView.builder(
+          if (_destination.isNotEmpty) // Condition pour afficher la liste
+            Positioned(
+              top: 50, // Adjust the top position as required
+              bottom: 0, // Allow the list to fill the remaining space
+              left: 0,
+              right: 0,
+              child: ListView.builder(
                 shrinkWrap: true,
                 itemCount: _destination.length,
                 itemBuilder: (context, index) {
-                  return Card( margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                  return Card(
+                    margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                     child: ListTile(
                       title: Text(_destination[index]),
                       onTap: () async {
@@ -630,12 +642,9 @@ class _AccueilState extends State<Accueil> {
                     ),
                   );
                 },
-              ): Center(child: Text("Aucune destination disponible."),),
-            ),
+              ),
+            )
         ],
-
-
-
       ),
     );
   }
