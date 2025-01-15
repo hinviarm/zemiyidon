@@ -64,8 +64,8 @@ class _Person extends State<Person> {
     var url = Uri.parse(urlString);
     var reponse = await http.get(url);
     if (reponse.statusCode == 200) {
+      var wordShow = convert.jsonDecode(reponse.body);
       setState(() {
-        var wordShow = convert.jsonDecode(reponse.body);
         for (var elem in wordShow) {
           IdTrajet.add(elem[6]);
           if (elem[0] == 1) {
@@ -83,7 +83,7 @@ class _Person extends State<Person> {
                 " à " +
                 elem[3] +
                 " démarrant le: " +
-                elem[4]);
+                elem[4].replaceAll('T', " à "));
             estChauffeur.add(false);
           }
           debugPrint(elem[2] + " à " + elem[3]);

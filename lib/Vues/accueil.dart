@@ -4,6 +4,7 @@ import 'package:cache_storage/cache_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_session_manager/flutter_session_manager.dart';
+import 'package:flutter_sms/flutter_sms.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:intl/intl.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
@@ -48,15 +49,34 @@ class _AccueilState extends State<Accueil> {
   List<int> identifiantChauffeur = [];
   List<String> trajetTrouve = [];
   String info = "";
+  String nom = "";
+  String prenom = "";
+  String telephone = "";
+  List<String> telChauffeur = [];
+  int trajetID = 0;
+  dynamic resultat = [];
   static const String title = 'title';
 
   static const Map<String, dynamic> Fr = {title: 'Localization'};
   late BuildContext dialogContext;
 
+  void recSession() async {
+    nom = await SessionManager().get("nom");
+    prenom = await SessionManager().get("prenom");
+    telephone = await SessionManager().get("telephone");
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     dialogContext = context; // Sauvegarde le contexte ici
+  }
+  void _sendSMS(String message, List<String> recipents) async {
+    String _result = await sendSMS(message: message, recipients: recipents)
+        .catchError((onError) {
+      print(onError);
+    });
+    print(_result);
   }
 
   Future<void> _Detection() async {
@@ -204,9 +224,9 @@ class _AccueilState extends State<Accueil> {
     var response = await http.get(url);
     if (response.statusCode == 200) {
       debugPrint("Voici " + response.body.toString());
-      var wordShow = convert.jsonDecode(response.body);
-      if (wordShow.toString() != "[]") {
-        for (var elem in wordShow) {
+      resultat = convert.jsonDecode(response.body);
+      if (resultat.toString() != "[]") {
+        for (var elem in resultat) {
           debugPrint("happy : " + elem.toString());
           identifiantTrajet.add(elem[0]);
           identifiantChauffeur.add(elem[1]);
@@ -242,6 +262,8 @@ class _AccueilState extends State<Accueil> {
                 elem[0] +
                 " au " +
                 elem[2];
+            telChauffeur = [];
+            telChauffeur.add(elem[2]);
           });
         }
       }
@@ -276,6 +298,53 @@ class _AccueilState extends State<Accueil> {
       print('Corps de la réponse : ${response.body}');
       if (response.statusCode == 200) {
         debugPrint('Insertion réussie : ${response.statusCode}');
+        insert = true;
+      }
+    } catch (e) {
+      print('Erreur : $e');
+    }
+  }
+
+  Future<void> insertionPassager() async {
+    await longitudeLatitude();
+    String? email = await SessionManager().get("email");
+    debugPrint("Voici votre email : ${email!}");
+    String dateDep = "0000-00-00 00:00:00";
+    for(var elem in resultat){
+      if(elem[0] == trajetID){
+        dateDep = elem[9].toString().replaceAll('T', ' ');
+      }
+    }
+    var urlStringPost = 'http://149.202.45.36:8008/insertionpassager';
+    var urlPost = Uri.parse(urlStringPost);
+    var body = convert.jsonEncode({
+      'Email': email!,
+      'DateDepart': dateDep,
+      'NombrePlaces': int.parse(NbrePersonnes.text),
+      'QuartierDepart': Depart.text,
+      'DepartLogitude': locationDep.first.longitude,
+      'DepartLatitude': locationDep.first.latitude,
+      'QuartierDest': Destination.text,
+      'DestLogitude': locationDest.first.longitude,
+      'DestLatitude': locationDest.first.latitude,
+      'IDVoyage': trajetID,
+    });
+
+    try {
+      var response = await http.post(
+        urlPost,
+        headers: {'Content-Type': 'application/json'},
+        body: body,
+      );
+      print('Statut de la réponse : ${response.statusCode}');
+      print('Corps de la réponse : ${response.body}');
+      if (response.statusCode == 200) {
+        debugPrint('Insertion réussie : ${response.statusCode}');
+        _sendSMS("Bonjour, " + nom + " " + prenom +
+            " Souhaite reserver " +
+            NbrePersonnes.text +
+            " Connectez vous pour valider ou pas",
+            telChauffeur);
         insert = true;
       }
     } catch (e) {
@@ -320,6 +389,7 @@ class _AccueilState extends State<Accueil> {
   @override
   void initState() {
     _Detection();
+    recSession();
     super.initState();
   }
 
@@ -581,11 +651,47 @@ class _AccueilState extends State<Accueil> {
                           ),
                           onTap: () async {
                             await chercheChauffeur(index);
-                            Flushbar(
-                              title: "Contactez le chauffeur!",
-                              message: info,
-                              duration: const Duration(seconds: 15),
-                            )..show(context);
+                            trajetID = identifiantTrajet[index];
+                            Alert(
+                              context: context,
+                              type: AlertType.none,
+                              title: "Voulez vous reservez ?",
+                              desc: "Un message sera envoyé au chauffeur. S'il accepte, votre voyage sera confirmé",
+                              buttons: [
+                                DialogButton(
+                                  child: Text(
+                                    "oui",
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 20),
+                                  ),
+                                  onPressed: () async{
+                                    await insertionPassager();
+                                  },
+                                  width: 120,
+                                ),
+                                DialogButton(
+                                  child: Text(
+                                    "non",
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 20),
+                                  ),
+                                  onPressed: () =>
+                                      Navigator.pop(context),
+                                  width: 120,
+                                )
+                              ],
+                            ).show();
+
+                            if(insert) {
+                              Flushbar(
+                                title: "Message concernant votre voyage sur Zemiyidon",
+                                message: "Pouvez vous confirmer ma reservation dans l'application zemiyidon? \n Merci \n Cordialement",
+                                duration: const Duration(seconds: 15),
+                              )
+                                ..show(context);
+                            }
                           },
                         );
                       },

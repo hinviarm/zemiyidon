@@ -23,6 +23,7 @@ if (flutterVersionName == null) {
     flutterVersionName = "1.0"
 }
 
+
 android {
     namespace = "com.zemiyidon.zemiyidon"
     compileSdk = flutter.compileSdkVersion

@@ -127,6 +127,18 @@ class _MonProfil extends State<Profil> {
   }
 
   Future<String?> _signupUser(SignupData data) async {
+    var urlString = 'http://149.202.45.36:8008/identification?Email=${data.name}';
+    var url = Uri.parse(urlString);
+    var reponse = await http.get(url);
+    if (reponse.statusCode == 200) {
+      connect = true;
+      var wordShow = convert.jsonDecode(reponse.body);
+      for (var elem in wordShow) {
+        if(elem != []){
+          return "Votre email existe déjà. Faites mot de passe oublié.";
+        }
+      }
+    }
     // Générer et chiffrer le code
     randomCode = generateRandomCode(4); // 6 caractères alphanumériques
     bool envoye = await emailing(data.name!, randomCode, 2);
@@ -158,23 +170,6 @@ class _MonProfil extends State<Profil> {
       ),
     );
   }
-
-/*
-  void envoiMessage (String tel, String code, int appelant)async{
-    recipents.add(tel);
-    if(appelant == 1){
-      message = "Bonjour,\n\nCliquez sur le lien suivant pour réinitialiser votre mot de passe :\n$code\n\nCordialement,\nL'équipe Zemiyidon";
-    }
-    else if (appelant == 2){
-      message = "Bonjour,\n\nCliquez sur le lien suivant pour valider votre mot de passe :\n$code\n\nCordialement,\nL'équipe Zemiyidon";
-    }
-    String _result = await sendSMS(message: message, recipients: recipents, sendDirect: true)
-        .catchError((onError) {
-      print(onError);
-    });
-    print(_result);
-  }
- */
 
   Future<bool> emailing(String mail, String code, int appelant) async {
     var urlString =
