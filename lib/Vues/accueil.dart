@@ -22,7 +22,6 @@ class Accueil extends StatefulWidget {
 }
 
 class _AccueilState extends State<Accueil> {
-  bool? _Rep;
   bool exec = false;
   bool estChauffeur = false;
   bool insert = false;
@@ -35,8 +34,6 @@ class _AccueilState extends State<Accueil> {
   var longitude = 0.0;
   List<String> arrets = [];
   List<Villes> villes = [];
-  List<String> _depart = [];
-  List<String> _destination = [];
   DateTime? selectedDay = null;
   TimeOfDay? _selectedTime = null;
   DateTime? dateVoyage = null;
@@ -57,7 +54,6 @@ class _AccueilState extends State<Accueil> {
   dynamic resultat = [];
   static const String title = 'title';
 
-  static const Map<String, dynamic> Fr = {title: 'Localization'};
   late BuildContext dialogContext;
 
   void recSession() async {
@@ -129,26 +125,6 @@ class _AccueilState extends State<Accueil> {
 
   //final Widget title;
   _onChangeText(value) => debugPrint("_onChangeText: $value");
-
-  _onSubmittedText(value) => debugPrint("_onSubmittedText: $value");
-
-  void _onSearchChanged(String query) async {
-    await _Detection();
-    setState(() {
-      _depart = arrets
-          .where((item) => item.toLowerCase().contains(query.toLowerCase()))
-          .toList();
-    });
-  }
-
-  void _onDestinationChanged(String query) async {
-    await _Detection();
-    setState(() {
-      _destination = arrets
-          .where((item) => item.toLowerCase().contains(query.toLowerCase()))
-          .toList();
-    });
-  }
 
   String endwithSpace(tmp) {
     while (tmp.endsWith(' ')) {
@@ -392,7 +368,7 @@ class _AccueilState extends State<Accueil> {
     recSession();
     super.initState();
   }
-
+  TextEditingController controller = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -419,32 +395,70 @@ class _AccueilState extends State<Accueil> {
                         children: [
                           Padding(
                             padding: const EdgeInsets.all(8.0),
-                            child: TextFormField(
-                              controller: Depart,
-                              onChanged: _onSearchChanged,
-                              decoration: InputDecoration(
-                                labelText: 'Votre point de Départ',
-                                hintText: 'Votre point de Départ',
-                                prefixIcon: Icon(Icons.directions_car_filled),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
+                              child: Autocomplete<String>(
+                                optionsBuilder: (TextEditingValue textEditingValue) {
+                                  if (textEditingValue.text.isEmpty) {
+                                    return const Iterable<String>.empty();
+                                  }
+                                  return arrets.where((String option) {
+                                    return option.toLowerCase().startsWith(textEditingValue.text.toLowerCase());
+                                  });
+                                },
+                                onSelected: (String selection) {
+                                  Depart.text = selection; // Mise à jour du TextFormField
+                                },
+                                fieldViewBuilder: (BuildContext context, TextEditingController textEditingController, FocusNode focusNode, VoidCallback onFieldSubmitted) {
+                                  return TextFormField(
+                                    controller: textEditingController,
+                                    focusNode: focusNode,
+                                    onChanged: (value) async {
+                                      await _Detection(); // Appelez la méthode async ici pour mettre à jour arrets
+                                    },
+                                    decoration: InputDecoration(
+                                      labelText: 'Votre point de Départ',
+                                      hintText: 'Votre point de Départ',
+                                      prefixIcon: Icon(Icons.directions_car_filled),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
-                            ),
                           ),
                           Padding(
                             padding: const EdgeInsets.all(8.0),
-                            child: TextFormField(
-                              controller: Destination,
-                              onChanged: _onDestinationChanged,
-                              decoration: InputDecoration(
-                                labelText: 'Votre destination',
-                                hintText: 'Votre destination',
-                                prefixIcon: Icon(Icons.flag),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
+                            child: Autocomplete<String>(
+                              optionsBuilder: (TextEditingValue textEditingValue) {
+                                // Vérifie si l'entrée est vide
+                                if (textEditingValue.text.isEmpty) {
+                                  return const Iterable<String>.empty();
+                                }
+                                // Filtre les résultats locaux
+                                return arrets.where((String option) {
+                                  return option.toLowerCase().startsWith(textEditingValue.text.toLowerCase());
+                                });
+                              },
+                              onSelected: (String selection) {
+                                Destination.text = selection; // Mise à jour du TextFormField
+                              },
+                              fieldViewBuilder: (BuildContext context, TextEditingController textEditingController, FocusNode focusNode, VoidCallback onFieldSubmitted) {
+                                return TextFormField(
+                                  controller: textEditingController,
+                                  focusNode: focusNode,
+                                  onChanged: (value) async {
+                                    await _Detection(); // Appelez la méthode async ici pour mettre à jour arrets
+                                  },
+                                  decoration: InputDecoration(
+                                    labelText: 'Votre destination',
+                                    hintText: 'Votre destination',
+                                    prefixIcon: Icon(Icons.flag),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           ),
                           Padding(
@@ -700,56 +714,6 @@ class _AccueilState extends State<Accueil> {
               ],
             ),
           ),
-          if (_depart.isNotEmpty)
-            Positioned(
-              top: 50, // Adjust the top position as required
-              bottom: 0, // Allow the list to fill the remaining space
-              left: 0,
-              right: 0,
-              child: ListView.builder(
-                itemCount: _depart.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                    child: ListTile(
-                      title: Text(_depart[index]),
-                      onTap: () {
-                        setState(() {
-                          Depart.text = _depart[index];
-                          _depart.clear();
-                        });
-                      },
-                    ),
-                  );
-                },
-              ),
-            ),
-          if (_destination.isNotEmpty) // Condition pour afficher la liste
-            Positioned(
-              top: 50, // Adjust the top position as required
-              bottom: 0, // Allow the list to fill the remaining space
-              left: 0,
-              right: 0,
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: _destination.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                    child: ListTile(
-                      title: Text(_destination[index]),
-                      onTap: () async {
-                        // Mise à jour de la destination sélectionnée
-                        setState(() {
-                          Destination.text = _destination[index];
-                          _destination.clear();
-                        });
-                      },
-                    ),
-                  );
-                },
-              ),
-            )
         ],
       ),
     );
