@@ -295,6 +295,20 @@ class _MonProfil extends State<Profil> {
               }
             },
             onRecoverPassword: _recoverPassword,
+            messages: LoginMessages(
+              userHint: 'Email',
+              passwordHint: 'Mot de Passe',
+              confirmPasswordHint: 'Confirmer',
+              loginButton: 'Se Connecter',
+              signupButton: "S'inscrire",
+              forgotPasswordButton: 'Mot de passe oublié?',
+              recoverPasswordButton: 'Aide à la connection',
+              goBackButton: 'Retour',
+              confirmPasswordError: 'Mot de passe Incorrect!',
+              recoverPasswordDescription:
+              'Un email vous aidera à vous connecter. Vous pouvez ensuite modifier votre mot de passe',
+              recoverPasswordSuccess: 'Email identifié avec succès',
+            ),
           ),
         ),
       ),

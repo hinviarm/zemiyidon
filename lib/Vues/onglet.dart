@@ -1,7 +1,6 @@
 import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_session_manager/flutter_session_manager.dart';
-import 'package:flutter_sms/flutter_sms.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert' as convert;
@@ -20,6 +19,7 @@ class _MonOnglet extends State<Onglet> {
   int _currentIndex = 0;
   String prenom = "Utilisateur"; // Valeur par défaut
   List<String> telChauffeur = [];
+  String email = "";
 
   @override
   void initState() {
@@ -33,18 +33,9 @@ class _MonOnglet extends State<Onglet> {
       prenom = fetchedPrenom ?? "Utilisateur"; // Valeur par défaut si null
     });
   }
-/*
-  void _sendSMS(String message, List<String> recipents) async {
-    String _result = await sendSMS(message: message, recipients: recipents)
-        .catchError((onError) {
-      print(onError);
-    });
-    print(_result);
-  }
- */
 
   void notificationAlerte() async {
-    String? email = await SessionManager().get("email");
+    email = await SessionManager().get("email");
     var urlString = 'http://149.202.45.36:8008/rechercheVoyage?Email=${email}';
     var url = Uri.parse(urlString);
     var response = await http.get(url);
@@ -132,7 +123,8 @@ class _MonOnglet extends State<Onglet> {
   }
 
   Future<void> _acceptReservation(dynamic elem) async {
-    var urlString = 'http://149.202.45.36:8008/miseAJourReservation?Identifiant=${elem[0]}';
+    email = await SessionManager().get("email");
+    var urlString = 'http://149.202.45.36:8008/miseAJourReservation?Email=${email}&Identifiant=${elem[0]}';
     var url = Uri.parse(urlString);
     var response = await http.put(url);
 

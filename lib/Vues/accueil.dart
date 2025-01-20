@@ -4,7 +4,6 @@ import 'package:cache_storage/cache_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_session_manager/flutter_session_manager.dart';
-import 'package:flutter_sms/flutter_sms.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:intl/intl.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
@@ -50,6 +49,7 @@ class _AccueilState extends State<Accueil> {
   String prenom = "";
   String telephone = "";
   List<String> telChauffeur = [];
+  String mailChauffeur = "";
   int trajetID = 0;
   dynamic resultat = [];
   static const String title = 'title';
@@ -66,13 +66,6 @@ class _AccueilState extends State<Accueil> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     dialogContext = context; // Sauvegarde le contexte ici
-  }
-  void _sendSMS(String message, List<String> recipents) async {
-    String _result = await sendSMS(message: message, recipients: recipents)
-        .catchError((onError) {
-      print(onError);
-    });
-    print(_result);
   }
 
   Future<void> _Detection() async {
@@ -199,6 +192,7 @@ class _AccueilState extends State<Accueil> {
     var url = Uri.parse(urlString);
     var response = await http.get(url);
     if (response.statusCode == 200) {
+      trajetTrouve = [];
       debugPrint("Voici " + response.body.toString());
       resultat = convert.jsonDecode(response.body);
       if (resultat.toString() != "[]") {
@@ -240,6 +234,7 @@ class _AccueilState extends State<Accueil> {
                 elem[2];
             telChauffeur = [];
             telChauffeur.add(elem[2]);
+            mailChauffeur = elem[3];
           });
         }
       }
@@ -283,6 +278,7 @@ class _AccueilState extends State<Accueil> {
 
   Future<void> insertionPassager() async {
     await longitudeLatitude();
+    recSession();
     String? email = await SessionManager().get("email");
     debugPrint("Voici votre email : ${email!}");
     String dateDep = "0000-00-00 00:00:00";
@@ -294,7 +290,11 @@ class _AccueilState extends State<Accueil> {
     var urlStringPost = 'http://149.202.45.36:8008/insertionpassager';
     var urlPost = Uri.parse(urlStringPost);
     var body = convert.jsonEncode({
-      'Email': email!,
+      'Nom': nom,
+      'Prenom': prenom,
+      'Telephone': telephone,
+      'Email': email,
+      'EmailChauffeur': mailChauffeur,
       'DateDepart': dateDep,
       'NombrePlaces': int.parse(NbrePersonnes.text),
       'QuartierDepart': Depart.text,
@@ -316,11 +316,6 @@ class _AccueilState extends State<Accueil> {
       print('Corps de la réponse : ${response.body}');
       if (response.statusCode == 200) {
         debugPrint('Insertion réussie : ${response.statusCode}');
-        _sendSMS("Bonjour, " + nom + " " + prenom +
-            " Souhaite reserver " +
-            NbrePersonnes.text +
-            " Connectez vous pour valider ou pas",
-            telChauffeur);
         insert = true;
       }
     } catch (e) {
@@ -681,6 +676,7 @@ class _AccueilState extends State<Accueil> {
                                   ),
                                   onPressed: () async{
                                     await insertionPassager();
+                                    Navigator.pop(context);
                                   },
                                   width: 120,
                                 ),
