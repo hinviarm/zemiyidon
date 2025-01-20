@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:another_flushbar/flushbar.dart';
@@ -24,7 +25,8 @@ class Profil extends StatefulWidget {
 }
 
 class _MonProfil extends State<Profil> {
-  Duration get loginTime => Duration(milliseconds: 20);
+  Duration get loginTime => const Duration(milliseconds: 20);
+  Duration get timeoutDuration => const Duration(seconds: 5);
   var sessionManager = SessionManager();
   bool connect = false;
   String? id = '';
@@ -110,21 +112,36 @@ class _MonProfil extends State<Profil> {
         await sessionManager.set("telephone", teLephoneS);
       }
     }
+    else {
+      return;
+    }
     debugPrint('connect = $connect');
     debugPrint('sess = $sess');
   }
 
-  Future<String?> _authUser(LoginData data) {
+  Future<String?> _authUser(LoginData data) async {
     final c1 = Crypt.sha256(data.password);
     debugPrint('Name: ${data.name}, Password: ${c1.toString()}');
-    return Future.delayed(loginTime).then((_) async {
-      await sessionConnect(data.name, data.password);
+    try {
+      await Future.any([
+        Future.delayed(timeoutDuration, () => throw TimeoutException("Temps d'attente dépassé")),
+        sessionConnect(data.name, data.password),
+      ]);
+
+      // Vérifiez les états après l'opération
       if (!connect || !sess) {
         return 'Identifiants ou Mot de passe incorrect';
       }
-      return null;
-    });
+
+      return null; // Connexion réussie
+    } on TimeoutException {
+      return 'Temps d’attente dépassé. Vérifiez votre connexion et réessayez.';
+    } catch (e) {
+      debugPrint('Erreur inattendue : $e');
+      return 'Une erreur est survenue. Réessayez plus tard.';
+    }
   }
+
 
   Future<String?> _signupUser(SignupData data) async {
     var urlString = 'http://149.202.45.36:8008/identification?Email=${data.name}';
@@ -143,7 +160,7 @@ class _MonProfil extends State<Profil> {
     randomCode = generateRandomCode(4); // 6 caractères alphanumériques
     bool envoye = await emailing(data.name!, randomCode, 2);
     if (!envoye) {
-      return null;
+      return "Votre Email n'est pas valide";
     }
     debugPrint('Signup Name: ${data.name}, Password: ${data.password}');
     final c1 = Crypt.sha256(data.password!);
@@ -153,11 +170,15 @@ class _MonProfil extends State<Profil> {
     Nom = data.additionalSignupData!["Nom"]!;
     Prenom = data.additionalSignupData!["Prenom"]!;
     Telephone = data.additionalSignupData!["Telephone"]!;
-    await insertion(data.name!, c1.toString(), Nom, Prenom, Telephone);
-    return Future.delayed(loginTime).then((_) {
-      if (!mounted) return "Impossible de vous enregistrer";
-      return null;
-    });
+    try {
+      Future.any([
+        Future.delayed(timeoutDuration, () => throw TimeoutException("Temps d'attente dépassé")),
+    insertion(data.name!, c1.toString(), Nom, Prenom, Telephone),
+      ]);
+        if (!mounted) return "Impossible de vous enregistrer";
+    } on TimeoutException catch (_) {
+      return 'Temps d’attente dépassé. Vérifiez votre connexion et réessayez.';
+    }
   }
 
   String generateRandomCode(int length) {
@@ -208,18 +229,12 @@ class _MonProfil extends State<Profil> {
     insert = true;
     sessionConnect(mail, "");
     randomCode = generateRandomCode(4);
+    try {
     bool envoye = await emailing(mail, randomCode, 1);
     if (!envoye) {
       return "Votre adresse mail n'est pas valide" as Future<String>;
     }
     else {
-      /*await Flushbar(
-        title: "Code Envoyé",
-        message: "Un code de validation de 4 chiffres vous a été envoyé par mail. Veuillez le consulter et le saisir dans la page suivante",
-        duration: const Duration(seconds: 5),
-      )
-        ..show(context);
-       */
       Navigator.of(context).pushReplacement(
         FadePageRoute(
           //builder: (context) => const Onglet(),
@@ -227,10 +242,14 @@ class _MonProfil extends State<Profil> {
         ),
       );
     }
-    return Future.delayed(loginTime).then((_) {
-      if (!mounted) return null;
-      return null;
-    });
+
+      await Future.delayed(loginTime).then((_) {
+        if (!mounted) return null;
+        return null;
+      }).timeout(timeoutDuration);
+    }on TimeoutException catch (_) {
+      return 'Temps d’attente dépassé. Vérifiez votre connexion et réessayez.';
+    }
   }
 
   @override
