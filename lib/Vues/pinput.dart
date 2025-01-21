@@ -16,7 +16,8 @@ class PinputCode extends StatefulWidget {
   final String prenom;
   final String telephone;
   final String password;
-  const PinputCode({required this.code, required this.email, required this.nom, required this.prenom, required this.telephone, required this.password, Key? key}) : super(key: key);
+  final bool insert;
+  const PinputCode({required this.code, required this.email, required this.nom, required this.prenom, required this.telephone, required this.password, required this.insert, Key? key}) : super(key: key);
 
   @override
   State<PinputCode> createState() => _PinputCodeState();
@@ -159,7 +160,11 @@ class _PinputCodeState extends State<PinputCode> {
                       onCompleted: (pin) async{
                         if (pin == widget.code) {
                           insertionSess();
-                          await insertion(widget.email, widget.password, widget.nom, widget.prenom, widget.telephone);
+                          if(widget.insert) {
+                            await insertion(
+                                widget.email, widget.password, widget.nom,
+                                widget.prenom, widget.telephone);
+                          }
                           Navigator.of(context).pushReplacement(
                             FadePageRoute(
                               builder: (context) => Onglet(),

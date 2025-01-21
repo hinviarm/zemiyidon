@@ -20,6 +20,8 @@ class _MonOnglet extends State<Onglet> {
   String prenom = "Utilisateur"; // Valeur par défaut
   List<String> telChauffeur = [];
   String email = "";
+  String nom = "";
+  String telephone = "";
 
   @override
   void initState() {
@@ -124,7 +126,10 @@ class _MonOnglet extends State<Onglet> {
 
   Future<void> _acceptReservation(dynamic elem) async {
     email = await SessionManager().get("email");
-    var urlString = 'http://149.202.45.36:8008/miseAJourReservation?Email=${email}&Identifiant=${elem[0]}';
+    nom = await SessionManager().get("nom");
+    telephone = await SessionManager().get("telephone");
+
+    var urlString = 'http://149.202.45.36:8008/miseAJourReservation?Email=${email}&Nom=${nom}&Prenom=${prenom}&Telephone=${telephone}&Identifiant=${elem[0]}';
     var url = Uri.parse(urlString);
     var response = await http.put(url);
 
@@ -159,7 +164,7 @@ class _MonOnglet extends State<Onglet> {
     var response = await http.delete(url);
 
     if (response.statusCode == 200) {
-      debugPrint("Réservation acceptée");
+      debugPrint("Réservation supprimée");
       /*
       var urlString2 =
           'http://149.202.45.36:8008/infoChauffeur?Identifiant=${elem[0]}';

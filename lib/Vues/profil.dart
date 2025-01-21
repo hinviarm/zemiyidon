@@ -240,7 +240,7 @@ class _MonProfil extends State<Profil> {
       Navigator.of(context).pushReplacement(
         FadePageRoute(
           //builder: (context) => const Onglet(),
-          builder: (context) => PinputCode(code: randomCode, nom: Nom, prenom: Prenom, telephone: Telephone, email: Email, password: Password),
+          builder: (context) => PinputCode(code: randomCode, nom: Nom, prenom: Prenom, telephone: Telephone, email: Email, password: Password, insert: false,),
         ),
       );
     }
@@ -311,7 +311,7 @@ class _MonProfil extends State<Profil> {
                 Navigator.of(context).pushReplacement(
                   FadePageRoute(
                     //builder: (context) => const Onglet(),
-                    builder: (context) => PinputCode(code: randomCode, nom: Nom, prenom: Prenom, telephone: Telephone, email: Email, password: Password),
+                    builder: (context) => PinputCode(code: randomCode, nom: Nom, prenom: Prenom, telephone: Telephone, email: Email, password: Password, insert: true,),
                   ),
                 );
               }
