@@ -11,7 +11,12 @@ import 'dart:convert' as convert;
 
 class PinputCode extends StatefulWidget {
   final String code;
-  const PinputCode({required this.code, Key? key}) : super(key: key);
+  final String email;
+  final String nom;
+  final String prenom;
+  final String telephone;
+  final String password;
+  const PinputCode({required this.code, required this.email, required this.nom, required this.prenom, required this.telephone, required this.password, Key? key}) : super(key: key);
 
   @override
   State<PinputCode> createState() => _PinputCodeState();
@@ -24,11 +29,14 @@ class _PinputCodeState extends State<PinputCode> {
   late final GlobalKey<FormState> formKey;
   int n = 4;
   var sessionManager = SessionManager();
-  String? mail = "";
-  String? password = "";
-  String? nom = "";
-  String? prenom = "";
-  String? telephone = "";
+
+  Future<void> insertionSess() async {
+    await sessionManager.set("email", widget.email);
+    await sessionManager.set("password", widget.password);
+    await sessionManager.set("nom", widget.nom);
+    await sessionManager.set("prenom", widget.prenom);
+    await sessionManager.set("telephone", widget.telephone);
+  }
 
   @override
   void initState() {
@@ -43,15 +51,6 @@ class _PinputCodeState extends State<PinputCode> {
     pinController.dispose();
     focusNode.dispose();
     super.dispose();
-  }
-
-  Future<void> recupSess() async {
-    mail = await sessionManager.get("email");
-    password = await sessionManager.get("password");
-    nom = await sessionManager.get("nom");
-    prenom = await sessionManager.get("prenom");
-    telephone = await sessionManager.get("telephone");
-    await insertion(mail!, password!, nom!, prenom!, telephone!);
   }
 
   Future<void> insertion(String mail, String password, String nom,
@@ -133,7 +132,7 @@ class _PinputCodeState extends State<PinputCode> {
                       showCursor: true,
                       separatorBuilder: (index) => const SizedBox(width: 8),
                       validator: (value) {
-                        if (n > 0) {
+                        if (n > 1 && value != widget.code) {
                           n = n - 1;
                           Flushbar(
                           title: "Mauvais code",
@@ -147,7 +146,7 @@ class _PinputCodeState extends State<PinputCode> {
                               : 'Mauvais code \nIl vous reste ' +
                                   n.toString() +
                                   ' essai(s)';
-                        } else {
+                        } else if (value != widget.code){
                           SessionManager().destroy();
                           Navigator.of(context).pushReplacement(
                             FadePageRoute(
@@ -157,9 +156,10 @@ class _PinputCodeState extends State<PinputCode> {
                         }
                       },
                       hapticFeedbackType: HapticFeedbackType.lightImpact,
-                      onCompleted: (pin) {
+                      onCompleted: (pin) async{
                         if (pin == widget.code) {
-                          recupSess();
+                          insertionSess();
+                          await insertion(widget.email, widget.password, widget.nom, widget.prenom, widget.telephone);
                           Navigator.of(context).pushReplacement(
                             FadePageRoute(
                               builder: (context) => Onglet(),

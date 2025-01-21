@@ -31,6 +31,8 @@ class _MonProfil extends State<Profil> {
   bool connect = false;
   String? id = '';
   String? mDP = '';
+  String Email = "";
+  String Password = "";
   String Nom = "";
   String Prenom = "";
   String Telephone = "";
@@ -66,16 +68,6 @@ class _MonProfil extends State<Profil> {
     super.dispose();
   }
 
-  Future<void> insertion(String mail, String password, String nom,
-      String prenom, String telephone) async {
-    await sessionManager.set("email", mail);
-    await sessionManager.set("password", password);
-    await sessionManager.set("nom", nom);
-    await sessionManager.set("prenom", prenom);
-    await sessionManager.set("telephone", telephone);
-    insert = true;
-  }
-
   Future<void> sessionConnect(String mail, String password) async {
     debugPrint('id ${mail}');
     debugPrint('MDP ${password}');
@@ -104,13 +96,18 @@ class _MonProfil extends State<Profil> {
           sess = true;
         }
       });
-      if (sess == true || insert == true) {
+      if (sess == true) {
         await sessionManager.set("email", id);
         await sessionManager.set("password", mDP);
         await sessionManager.set("nom", nOmS);
         await sessionManager.set("prenom", prenOmS);
         await sessionManager.set("telephone", teLephoneS);
       }
+      Nom = nOmS!;
+      Prenom = prenOmS!;
+      Email = id!;
+      Telephone = teLephoneS!;
+      Password = mDP!;
     }
     else {
       return;
@@ -156,10 +153,19 @@ class _MonProfil extends State<Profil> {
         }
       }
     }
+    Future<bool> envoye = Future.value(false);
     // Générer et chiffrer le code
     randomCode = generateRandomCode(4); // 6 caractères alphanumériques
-    bool envoye = await emailing(data.name!, randomCode, 2);
-    if (!envoye) {
+    try {
+      Future.any([
+      Future.delayed(timeoutDuration, () => throw TimeoutException("Temps d'attente dépassé")),
+        envoye = emailing(data.name!, randomCode, 2),
+    ]);
+    if (!mounted) return "Impossible de vous enregistrer";
+    } on TimeoutException catch (_) {
+    return 'Temps d’attente dépassé. Vérifiez votre connexion et réessayez.';
+    }
+    if (await envoye == false) {
       return "Votre Email n'est pas valide";
     }
     debugPrint('Signup Name: ${data.name}, Password: ${data.password}');
@@ -170,15 +176,11 @@ class _MonProfil extends State<Profil> {
     Nom = data.additionalSignupData!["Nom"]!;
     Prenom = data.additionalSignupData!["Prenom"]!;
     Telephone = data.additionalSignupData!["Telephone"]!;
-    try {
-      Future.any([
-        Future.delayed(timeoutDuration, () => throw TimeoutException("Temps d'attente dépassé")),
-    insertion(data.name!, c1.toString(), Nom, Prenom, Telephone),
-      ]);
-        if (!mounted) return "Impossible de vous enregistrer";
-    } on TimeoutException catch (_) {
-      return 'Temps d’attente dépassé. Vérifiez votre connexion et réessayez.';
-    }
+    Email = data.name!;
+    Password = c1.toString();
+    insert = true;
+
+
   }
 
   String generateRandomCode(int length) {
@@ -238,7 +240,7 @@ class _MonProfil extends State<Profil> {
       Navigator.of(context).pushReplacement(
         FadePageRoute(
           //builder: (context) => const Onglet(),
-          builder: (context) => PinputCode(code: randomCode),
+          builder: (context) => PinputCode(code: randomCode, nom: Nom, prenom: Prenom, telephone: Telephone, email: Email, password: Password),
         ),
       );
     }
@@ -272,8 +274,16 @@ class _MonProfil extends State<Profil> {
             onLogin: _authUser,
             onSignup: _signupUser,
             additionalSignupFields: [
-              const UserFormField(keyName: 'Nom'),
-              const UserFormField(keyName: 'Prenom', displayName: 'Prénom'),
+              UserFormField(keyName: 'Nom',
+    fieldValidator: (value) { if (value!.isEmpty){
+    return "Veuillez entrer votre nom";
+    }
+    return null; }),
+              UserFormField(keyName: 'Prenom', displayName: 'Prénom',
+                  fieldValidator: (value) { if (value!.isEmpty){
+                    return "Veuillez entrer votre prénom";
+                  }
+                  return null; }),
               UserFormField(
                 keyName: 'Telephone',
                 displayName: 'Téléphone',
@@ -301,7 +311,7 @@ class _MonProfil extends State<Profil> {
                 Navigator.of(context).pushReplacement(
                   FadePageRoute(
                     //builder: (context) => const Onglet(),
-                    builder: (context) => PinputCode(code: randomCode),
+                    builder: (context) => PinputCode(code: randomCode, nom: Nom, prenom: Prenom, telephone: Telephone, email: Email, password: Password),
                   ),
                 );
               }
@@ -323,10 +333,13 @@ class _MonProfil extends State<Profil> {
               forgotPasswordButton: 'Mot de passe oublié?',
               recoverPasswordButton: 'Aide à la connection',
               goBackButton: 'Retour',
+              signUpSuccess: 'Un mail contenant le code de validation vous a été envoyé',
               confirmPasswordError: 'Mot de passe Incorrect!',
               recoverPasswordDescription:
               'Un email vous aidera à vous connecter. Vous pouvez ensuite modifier votre mot de passe',
               recoverPasswordSuccess: 'Email identifié avec succès',
+              additionalSignUpSubmitButton: "Soumettre",
+              additionalSignUpFormDescription: "Ajoutez vos informations d'identification",
             ),
           ),
         ),
