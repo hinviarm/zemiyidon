@@ -238,7 +238,7 @@ class _Person extends State<Person> {
               ),
             ),
             Expanded(
-              flex: _MyListOID.isEmpty ? 0 : 16,
+              flex: 16,
               child: ListView.builder(
                 itemBuilder: (context, index) {
                   return InkWell(
