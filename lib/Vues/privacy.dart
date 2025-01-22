@@ -38,9 +38,12 @@ class _MyPrivacyState extends State<Privacy> {
           new Flex(
             direction: Axis.vertical,
             children: <Widget>[
-              const Expanded(
+              Expanded(
                 flex: 7,
-                child: ScrollableTextIndicator(
+                child: Container(
+    margin: const EdgeInsets.symmetric(
+    horizontal: 20, vertical: 10),
+                child: const ScrollableTextIndicator(
                   text: Text(
                     """Politique de confidentialité\n 1.Collecte de l’information\n
     Nous recueillons des informations sur votre identité et vos contacts sur Zémiyidon dans le but de pouvoir établir un lien entre vous et vos passager ou votre chauffeur. Celà est indispensable au bon fonctionnement de l'application. Ces données seront supprimées sur votre demande.\n
@@ -70,6 +73,7 @@ class _MyPrivacyState extends State<Privacy> {
     En utilisant notre application Zémiyidon, vous consentez à notre politique de confidentialité. """,
                     style: TextStyle(color: Colors.white, fontSize: 20),
                   ),
+                ),
                 ),
               ),
               Expanded(
