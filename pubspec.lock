@@ -189,6 +189,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "10.8.0"
+  form_widgets:
+    dependency: "direct main"
+    description:
+      name: form_widgets
+      sha256: "02f0298d177ca04b459f2c2c756a7bea328fa2aa34cd165fa008f3cb82909bcb"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   geocoding:
     dependency: "direct main"
     description:
@@ -437,6 +445,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.7"
+  scrollable_text_indicator:
+    dependency: "direct main"
+    description:
+      name: scrollable_text_indicator
+      sha256: "2d907734824e2661e24f829d3d448096f3905f68f65aeb97af0e468efce40a23"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.2"
   selectable_autolink_text:
     dependency: "direct main"
     description:

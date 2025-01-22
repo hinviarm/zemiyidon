@@ -4,6 +4,7 @@ import 'package:flutter_session_manager/flutter_session_manager.dart';
 
 import 'Vues/accueil.dart';
 import 'Vues/onglet.dart';
+import 'Vues/privacy.dart';
 import 'Vues/profil.dart';
 
 Future<void> main() async {
@@ -17,9 +18,10 @@ class MyApp extends StatelessWidget {
   Future<bool> checkSession() async {
     String? id = await SessionManager().get("email");
     String? mDP = await SessionManager().get("password");
+    bool varaccord = await SessionManager().get("accord") ?? false;
 
     // Retourne true si les champs ne sont pas vides
-    return id != null && id.isNotEmpty && mDP != null && mDP.isNotEmpty;
+    return id != null && id.isNotEmpty && mDP != null && mDP.isNotEmpty && varaccord == true;
   }
 
   @override
@@ -46,13 +48,13 @@ class MyApp extends StatelessWidget {
           } else {
             // Vérifie si une session existe
             bool isLoggedIn = snapshot.data ?? false;
-            return isLoggedIn ? Onglet() : Profil();
+            return isLoggedIn ? Onglet() : Privacy();
           }
         },
       ),
       routes: {
         '/onglet': (context) => Onglet(),
-        '/profil': (context) => Profil(),
+        '/profil': (context) => Privacy(),
       },
     );
   }

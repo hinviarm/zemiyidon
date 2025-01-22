@@ -75,7 +75,7 @@ class _Person extends State<Person> {
                 " à " +
                 elem[3] +
                 " démarrant le: " +
-                elem[4]);
+                elem[4].replaceAll('T', " à "));
             estChauffeur.add(true);
           } else {
             _MyListOID.add(" Vous êtes passager sur le trajet: " +
@@ -126,7 +126,6 @@ class _Person extends State<Person> {
       ),
       new Container(
         padding: EdgeInsets.only(top: 60),
-        margin: const EdgeInsets.only(left: 20, right: 20),
         color: Colors.white.withOpacity(0.7),
         child: Flex(
           direction: Axis.vertical,
@@ -134,6 +133,7 @@ class _Person extends State<Person> {
             Expanded(
               flex: 5,
               child: Container(
+                margin: const EdgeInsets.only(left: 20, right: 20),
                 child: TextFormField(
                   onChanged: _onChangeTextNom,
                   controller: Nom,
@@ -155,6 +155,7 @@ class _Person extends State<Person> {
             Expanded(
               flex: 5,
               child: Container(
+                margin: const EdgeInsets.only(left: 20, right: 20),
                 child: TextFormField(
                   onChanged: _onChangeTextPrenom,
                   controller: Prenom,
@@ -176,6 +177,7 @@ class _Person extends State<Person> {
             Expanded(
               flex: 5,
               child: Container(
+                margin: const EdgeInsets.only(left: 20, right: 20),
                 child: TextFormField(
                   onChanged: _onChangeTextMotDePasse,
                   controller: MotDePasse,
@@ -209,6 +211,7 @@ class _Person extends State<Person> {
             Expanded(
               flex: 5,
               child: Container(
+                margin: const EdgeInsets.only(left: 20, right: 20),
                 child: TextFormField(
                   keyboardType: TextInputType.phone,
                   autocorrect: false,
@@ -240,7 +243,7 @@ class _Person extends State<Person> {
                 itemBuilder: (context, index) {
                   return InkWell(
                     child: Container(
-                      //margin: const EdgeInsets.only(left: 20, right: 20),
+                      margin: const EdgeInsets.only(left: 20, right: 20),
                       color: (index % 2 == 0)
                           ? Colors.white.withOpacity(0.7)
                           : Colors.cyanAccent.withOpacity(0.7),

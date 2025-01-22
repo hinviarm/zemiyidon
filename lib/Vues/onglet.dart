@@ -5,6 +5,7 @@ import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert' as convert;
 import 'accueil.dart';
+import 'apropos.dart';
 import 'person.dart';
 
 class Onglet extends StatefulWidget {
@@ -208,6 +209,7 @@ class _MonOnglet extends State<Onglet> {
         children: <Widget>[
           Accueil(),
           Person(),
+          Apropos(),
         ],
       ),
       bottomNavigationBar: Theme(
@@ -234,6 +236,10 @@ class _MonOnglet extends State<Onglet> {
             BottomNavigationBarItem(
               icon: const Icon(Icons.boy_rounded),
               label: prenom.isNotEmpty ? prenom : 'Profil', // Valeur par défaut
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.info),
+              label: 'A Propos',
             ),
           ],
         ),

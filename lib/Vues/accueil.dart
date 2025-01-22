@@ -539,7 +539,7 @@ class _AccueilState extends State<Accueil> {
                           ),
                           Text(
                             estChauffeur
-                                ? "Vous êtes le conducteur "
+                                ? "Vous êtes conducteur "
                                 : "Vous êtes passager",
                           ),
                           Padding(
