@@ -70,7 +70,7 @@ class _Person extends State<Person> {
           IdTrajet.add(elem[6]);
           if (elem[0] == 1) {
             //EstChauffeur, DateArrive, QuartierDepart, QuartierArrivee, DateDepart, NombrePlaces
-            _MyListOID.add("Vous êtes chauffeur sur le trajet: " +
+            _MyListOID.add(" Vous êtes chauffeur sur le trajet: " +
                 elem[2] +
                 " à " +
                 elem[3] +
@@ -78,7 +78,7 @@ class _Person extends State<Person> {
                 elem[4]);
             estChauffeur.add(true);
           } else {
-            _MyListOID.add("Vous êtes passager sur le trajet: " +
+            _MyListOID.add(" Vous êtes passager sur le trajet: " +
                 elem[2] +
                 " à " +
                 elem[3] +
@@ -126,6 +126,7 @@ class _Person extends State<Person> {
       ),
       new Container(
         padding: EdgeInsets.only(top: 60),
+        margin: const EdgeInsets.only(left: 20, right: 20),
         color: Colors.white.withOpacity(0.7),
         child: Flex(
           direction: Axis.vertical,
@@ -239,7 +240,7 @@ class _Person extends State<Person> {
                 itemBuilder: (context, index) {
                   return InkWell(
                     child: Container(
-                      margin: const EdgeInsets.only(left: 20, right: 20),
+                      //margin: const EdgeInsets.only(left: 20, right: 20),
                       color: (index % 2 == 0)
                           ? Colors.white.withOpacity(0.7)
                           : Colors.cyanAccent.withOpacity(0.7),
