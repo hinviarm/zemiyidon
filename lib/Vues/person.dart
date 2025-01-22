@@ -125,7 +125,7 @@ class _Person extends State<Person> {
         ),
       ),
       new Container(
-        padding: EdgeInsets.only(top: 40),
+        padding: EdgeInsets.only(top: 60),
         color: Colors.white.withOpacity(0.7),
         child: Flex(
           direction: Axis.vertical,
