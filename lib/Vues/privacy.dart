@@ -22,9 +22,6 @@ class _MyPrivacyState extends State<Privacy> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Zémiyidon"),
-      ),
       body: new Stack(
         children: <Widget>[
           new Container(
@@ -41,6 +38,7 @@ class _MyPrivacyState extends State<Privacy> {
               Expanded(
                 flex: 7,
                 child: Container(
+                  padding: EdgeInsets.only(top: 40),
     margin: const EdgeInsets.symmetric(
     horizontal: 20, vertical: 10),
                 child: const ScrollableTextIndicator(
@@ -66,9 +64,8 @@ class _MyPrivacyState extends State<Privacy> {
     Est-ce que nous utilisons des cookies ?\n
     Nous enregistrons toutes vos données (Nom, Prénom, Email, Mot de passe, Téléphone) en session de même qu'une variable nous indiquant si c'est votre première connection\n
     6.Suppression des informations\n
-    Vous pouvez demander la suppression de vos informations personnelles à tout moment en envoyant
-    Un mail à HINVI Armand Armel : armand.hinvi@gmail.com tout en précisant l’objet de votre demande\n
-
+    Vous pouvez supprimer vos informations personnelles à tout moment en allant sur la deuxième page de l'application; celle portant votre prénom. Vous y cochez supprimer ce compte et validez.
+    
     7.Consentement\n
     En utilisant notre application Zémiyidon, vous consentez à notre politique de confidentialité. """,
                     style: TextStyle(color: Colors.white, fontSize: 20),
