@@ -553,6 +553,29 @@ class _AccueilState extends State<Accueil> {
                                 ),
                               ),
                               onPressed: () async {
+                                if(dateVoyage == null){
+                                  Alert(
+                                    context: context,
+                                    type: AlertType.error,
+                                    title: "Sélectionnez la date et l'heure !",
+                                    desc:
+                                    "Veuillez sélectionner une date et une heure minimale de voyage",
+                                    buttons: [
+                                      DialogButton(
+                                        child: Text(
+                                          "Fermer",
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 20),
+                                        ),
+                                        onPressed: () =>
+                                            Navigator.pop(context),
+                                        width: 120,
+                                      )
+                                    ],
+                                  ).show();
+                                  return;
+                                }
                                 // Insertion si chauffeur et recherche si voyageur
                                 if (NbrePersonnes.text.isEmpty) {
                                   Alert(
@@ -697,7 +720,7 @@ class _AccueilState extends State<Accueil> {
                             if(insert) {
                               Flushbar(
                                 title: "Message concernant votre voyage sur Zemiyidon",
-                                message: "Pouvez vous confirmer ma reservation dans l'application zemiyidon? \n Merci \n Cordialement",
+                                message: "Nous avons envoyé un email au chauffeur. On vous tiendra au courant de sa réponse. \n Merci \n Cordialement",
                                 duration: const Duration(seconds: 15),
                               )
                                 ..show(context);
