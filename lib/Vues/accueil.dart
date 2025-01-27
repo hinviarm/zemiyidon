@@ -605,6 +605,11 @@ class _AccueilState extends State<Accueil> {
                                 if (estChauffeur) {
                                   await insertionChauffeur();
                                   if (insert) {
+                                    setState(() {
+                                    NbrePersonnes.text = "";
+                                    dateVoyage = null;
+                                    dateAffiche = "Selectionnez la date";
+                                    });
                                     Alert(
                                       context: context,
                                       type: AlertType.success,
@@ -700,6 +705,12 @@ class _AccueilState extends State<Accueil> {
                                   onPressed: () async{
                                     await insertionPassager();
                                     Navigator.pop(context);
+                                    setState(() {
+                                    trajetTrouve = [];
+                                    NbrePersonnes.text = "";
+                                    dateVoyage = null;
+                                    dateAffiche = "Selectionnez la date";
+                                    });
                                   },
                                   width: 120,
                                 ),

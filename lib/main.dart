@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_session_manager/flutter_session_manager.dart';
 
@@ -10,11 +11,25 @@ import 'Vues/profil.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(MyApp());
+  enableEdgeToEdge();
+}
+
+void enableEdgeToEdge() {
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent, // Rendre la barre de statut transparente
+      systemNavigationBarColor: Colors.transparent, // Barre de navigation transparente
+      systemNavigationBarIconBrightness: Brightness.light, // Icônes en blanc
+      statusBarIconBrightness: Brightness.light, // Icônes de la barre de statut en blanc
+    ),
+  );
+  SystemChrome.setEnabledSystemUIMode(
+    SystemUiMode.edgeToEdge, // Active le mode "edge-to-edge"
+  );
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   Future<bool> checkSession() async {
     String? id = await SessionManager().get("email");
     String? mDP = await SessionManager().get("password");
