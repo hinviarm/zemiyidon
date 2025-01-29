@@ -10,10 +10,10 @@ import 'Vues/profil.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(MyApp());
-  enableEdgeToEdge();
+  //enableEdgeToEdge();
+  runApp(const MyApp());
 }
-
+/*
 void enableEdgeToEdge() {
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
@@ -21,12 +21,16 @@ void enableEdgeToEdge() {
       systemNavigationBarColor: Colors.transparent, // Barre de navigation transparente
       systemNavigationBarIconBrightness: Brightness.light, // Icônes en blanc
       statusBarIconBrightness: Brightness.light, // Icônes de la barre de statut en blanc
+
+      systemStatusBarContrastEnforced: false, // Empêche les modifications non voulues sur la barre de statut
+      systemNavigationBarContrastEnforced: false, // Empêche les modifications non voulues sur la barre de navigation
     ),
   );
   SystemChrome.setEnabledSystemUIMode(
     SystemUiMode.edgeToEdge, // Active le mode "edge-to-edge"
   );
 }
+ */
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
