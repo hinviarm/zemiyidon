@@ -11,6 +11,7 @@ import 'Vues/profil.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   //enableEdgeToEdge();
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   runApp(const MyApp());
 }
 /*

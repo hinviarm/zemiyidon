@@ -213,6 +213,28 @@ class _AccueilState extends State<Accueil> {
           });
         }
       }
+      else {
+        Alert(
+          context: context,
+          type: AlertType.info,
+          title: "Désolé !",
+          desc:
+          "Aucun trajet ne correspond à vos critères de recherche",
+          buttons: [
+            DialogButton(
+              child: Text(
+                "Fermer",
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20),
+              ),
+              onPressed: () =>
+                  Navigator.pop(context),
+              width: 120,
+            )
+          ],
+        ).show();
+      }
     }
   }
 
